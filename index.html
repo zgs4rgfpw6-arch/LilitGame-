@@ -276,11 +276,35 @@
             text-overflow: ellipsis;
         }
 
+        .profile-details-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .profile-username {
             color: #00d2ff;
             font-size: 0.85rem;
             font-weight: 500;
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
+        }
+
+        .profile-id-badge {
+            background: rgba(255, 42, 117, 0.12);
+            border: 1px solid rgba(255, 42, 117, 0.35);
+            border-radius: 8px;
+            padding: 2px 8px;
+            color: #ff2a75;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .profile-id-badge:active {
+            transform: scale(0.95);
+            background: rgba(255, 42, 117, 0.25);
         }
     </style>
 </head>
@@ -394,7 +418,10 @@
             </div>
             <div class="profile-info">
                 <div class="profile-name" id="tg-name">Загрузка...</div>
-                <div class="profile-username" id="tg-username" style="display: none;">@username</div>
+                <div class="profile-details-row">
+                    <div class="profile-username" id="tg-username" style="display: none;">@username</div>
+                    <div class="profile-id-badge" id="tg-game-id" onclick="copyGameId()" title="Нажмите, чтобы скопировать ID">ID: ----</div>
+                </div>
             </div>
         </div>
     </div>
@@ -408,6 +435,8 @@
             document.getElementById(screenId).classList.add('active');
         }
 
+        let userGameId = "";
+
         document.addEventListener('DOMContentLoaded', () => {
             let tgUser = null;
 
@@ -419,11 +448,22 @@
 
             if (!tgUser || !tgUser.first_name) {
                 tgUser = {
+                    id: 6912925240,
                     first_name: "Игрок",
                     username: "",
                     photo_url: null
                 };
             }
+
+            // Твой эксклюзивный ID "0001" для аккаунта 6912925240
+            if (tgUser.id === 6912925240) {
+                userGameId = "0001";
+            } else {
+                const numericId = tgUser.id || 1000;
+                userGameId = String((numericId % 9000) + 1000);
+            }
+
+            document.getElementById('tg-game-id').textContent = `ID: #${userGameId}`;
 
             if (tgUser.first_name) {
                 const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
@@ -445,6 +485,18 @@
                 document.getElementById('tg-avatar-placeholder').style.display = 'none';
             }
         });
+
+        function copyGameId() {
+            if (!userGameId) return;
+            navigator.clipboard.writeText(`#${userGameId}`).then(() => {
+                const badge = document.getElementById('tg-game-id');
+                const originalText = badge.textContent;
+                badge.textContent = "СКОПИРОВАНО!";
+                setTimeout(() => {
+                    badge.textContent = originalText;
+                }, 1500);
+            });
+        }
     </script>
 </body>
 </html>
