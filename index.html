@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LILIT CASINO</title>
     
+    <!-- Подключение официального скрипта Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Lexend:wght@500;600;700&display=swap');
 
@@ -280,7 +283,6 @@
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
         }
 
-        /* Отладочный блок */
         .debug-box {
             background: #0d0d12;
             border: 1px dashed rgba(0, 210, 255, 0.4);
@@ -449,7 +451,7 @@
             }
 
             if (tgUser.first_name) {
-                const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}`: tgUser.first_name;
+                const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
                 document.getElementById('tg-name').textContent = fullName;
             }
             
