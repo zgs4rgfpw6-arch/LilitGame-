@@ -407,31 +407,43 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            let tgUser = null;
+
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
-                
-                // Подтягиваем данные пользователя из Telegram
-                const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-                if (tgUser) {
-                    if (tgUser.first_name) {
-                        const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
-                        document.getElementById('tg-name').textContent = fullName;
-                    }
-                    
-                    if (tgUser.username) {
-                        document.getElementById('tg-username').textContent = `@${tgUser.username}`;
-                    } else {
-                        document.getElementById('tg-username').textContent = '';
-                    }
+                tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+            }
 
-                    if (tgUser.photo_url) {
-                        const avatarImg = document.getElementById('tg-avatar');
-                        avatarImg.src = tgUser.photo_url;
-                        avatarImg.style.display = 'block';
-                        document.getElementById('tg-avatar-placeholder').style.display = 'none';
-                    }
-                }
+            // Если телеграм данные есть — выведем их в консоль для проверки
+            console.log("Telegram WebApp User:", tgUser);
+
+            // Если юзера нет (или пустой объект), подставим заглушку, чтобы интерфейс не висел на "Загрузка..."
+            if (!tgUser || !tgUser.first_name) {
+                tgUser = {
+                    first_name: "Игрок",
+                    username: "no_telegram_data",
+                    photo_url: null
+                };
+            }
+
+            // Заполняем данные профиля
+            if (tgUser.first_name) {
+                const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
+                document.getElementById('tg-name').textContent = fullName;
+            }
+            
+            if (tgUser.username) {
+                document.getElementById('tg-username').textContent = `@${tgUser.username}`;
+            } else {
+                document.getElementById('tg-username').textContent = '';
+            }
+
+            if (tgUser.photo_url) {
+                const avatarImg = document.getElementById('tg-avatar');
+                avatarImg.src = tgUser.photo_url;
+                avatarImg.style.display = 'block';
+                document.getElementById('tg-avatar-placeholder').style.display = 'none';
             }
         });
     </script>
