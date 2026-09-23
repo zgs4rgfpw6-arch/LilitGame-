@@ -110,23 +110,36 @@
             margin: 0;
         }
 
+        /* АНИМАЦИЯ НЕОНОВОЙ ВЫВЕСКИ ЦЕЛИКОМ */
+        @keyframes signFlicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+                opacity: 1;
+                filter: drop-shadow(0 0 12px rgba(255, 0, 85, 0.4));
+            }
+            20%, 24%, 55% {
+                opacity: 0.75;
+                filter: drop-shadow(0 0 2px rgba(255, 0, 85, 0.1));
+            }
+        }
+
         /* Центральный логотип главного экрана */
         .logo-box-container {
             display: flex;
             justify-content: center;
             margin-top: 15px;
             margin-bottom: 30px;
+            animation: signFlicker 3.5s infinite;
         }
 
         .logo-frame {
             position: relative;
-            border: 1px solid rgba(255, 0, 85, 0.4);
+            border: 1px solid rgba(255, 0, 85, 0.45);
             border-radius: 16px;
             padding: 24px 35px;
             text-align: center;
             background: rgba(13, 13, 18, 0.6);
             box-shadow: 
-                0 0 15px rgba(255, 0, 85, 0.15),
+                0 0 15px rgba(255, 0, 85, 0.2),
                 inset 0 0 15px rgba(255, 0, 85, 0.05);
         }
 
@@ -296,7 +309,7 @@
     <div id="screen-games" class="screen">
         <div class="header-top">
             <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
-            <h2 class="section-title">Games</h2>
+            <h2 class="section-title">Игры</h2>
             <div style="width: 70px;"></div>
         </div>
 
@@ -329,7 +342,6 @@
 
 
     <script>
-        // Функция переключения экранов
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -337,7 +349,6 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        // Инициализация Telegram WebApp
         document.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
