@@ -282,19 +282,6 @@
             font-weight: 500;
             text-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
         }
-
-        .debug-box {
-            background: #0d0d12;
-            border: 1px dashed rgba(0, 210, 255, 0.4);
-            border-radius: 12px;
-            padding: 12px;
-            max-width: 400px;
-            margin: 15px auto 0 auto;
-            color: #00d2ff;
-            font-size: 0.75rem;
-            font-family: monospace;
-            word-break: break-all;
-        }
     </style>
 </head>
 <body>
@@ -407,13 +394,8 @@
             </div>
             <div class="profile-info">
                 <div class="profile-name" id="tg-name">Загрузка...</div>
-                <div class="profile-username" id="tg-username">@username</div>
+                <div class="profile-username" id="tg-username" style="display: none;">@username</div>
             </div>
-        </div>
-
-        <!-- Отладочный блок -->
-        <div id="debug-info" class="debug-box">
-            Загрузка отладчика...
         </div>
     </div>
 
@@ -428,24 +410,17 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             let tgUser = null;
-            let debugLog = "Telegram object: ";
 
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
-                
-                debugLog += "EXISTS. initData: " + (window.Telegram.WebApp.initData ? "YES" : "NO");
                 tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
-            } else {
-                debugLog += "NOT FOUND (not in Telegram)";
             }
-
-            document.getElementById('debug-info').textContent = debugLog + " | User object: " + JSON.stringify(tgUser);
 
             if (!tgUser || !tgUser.first_name) {
                 tgUser = {
                     first_name: "Игрок",
-                    username: "no_telegram_data",
+                    username: "",
                     photo_url: null
                 };
             }
@@ -455,10 +430,12 @@
                 document.getElementById('tg-name').textContent = fullName;
             }
             
-            if (tgUser.username) {
-                document.getElementById('tg-username').textContent = `@${tgUser.username}`;
+            const usernameEl = document.getElementById('tg-username');
+            if (tgUser.username && tgUser.username.trim() !== "") {
+                usernameEl.textContent = `@${tgUser.username}`;
+                usernameEl.style.display = 'block';
             } else {
-                document.getElementById('tg-username').textContent = '';
+                usernameEl.style.display = 'none';
             }
 
             if (tgUser.photo_url) {
