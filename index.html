@@ -270,7 +270,7 @@
         </div>
 
         <div class="menu-container">
-            <div class="menu-card" onclick="switchScreen('screen-games')">
+            <div class="menu-card" onclick="triggerHaptic(); switchScreen('screen-games')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
                     <span class="card-title">ИГРЫ</span>
@@ -278,7 +278,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Друзья')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Друзья')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">ДРУЗЬЯ</span>
@@ -286,7 +286,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Профиль')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Профиль')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♦</span>
                     <span class="card-title">ПРОФИЛЬ</span>
@@ -294,7 +294,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Выход')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Выход')">
                 <div class="menu-card-content">
                     <span class="card-icon-mint">♥</span>
                     <span class="card-title">ВЫХОД</span>
@@ -308,13 +308,13 @@
     <!-- ЭКРАН 2: ИГРЫ -->
     <div id="screen-games" class="screen">
         <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
+            <button class="back-btn" onclick="triggerHaptic(); switchScreen('screen-main')">← Назад</button>
             <h2 class="section-title">Игры</h2>
             <div style="width: 70px;"></div>
         </div>
 
         <div class="menu-container" style="margin-top: 20px;">
-            <div class="menu-card" onclick="alert('Запуск игры: Дурак')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Запуск игры: Дурак')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
                     <span class="card-title">ДУРАК</span>
@@ -322,7 +322,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Запуск игры: Blackjack')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Запуск игры: Blackjack')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">BLACKJACK</span>
@@ -330,7 +330,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Запуск игры: Рулетка')">
+            <div class="menu-card" onclick="triggerHaptic(); alert('Запуск игры: Рулетка')">
                 <div class="menu-card-content">
                     <span class="card-icon-mint">♥</span>
                     <span class="card-title">РУЛЕТКА</span>
@@ -342,6 +342,13 @@
 
 
     <script>
+        // Функция легкой вибрации через Telegram API
+        function triggerHaptic() {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
