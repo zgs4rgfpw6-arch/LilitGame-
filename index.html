@@ -11,8 +11,9 @@
         body {
             background-color: #060608;
             margin: 0;
-            padding: 20px 16px 16px 16px;
-            padding-top: 55px; /* Смещение вниз под шапку Telegram */
+            padding: 16px;
+            /* Автоматический отступ под верхнюю панель Telegram + запас */
+            padding-top: calc(env(safe-area-inset-top, 0px) + 50px);
             font-family: 'Lexend', sans-serif;
         }
 
