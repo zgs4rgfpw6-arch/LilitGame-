@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Lilit Header</title>
+    <title>LILIT CASINO</title>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap');
 
         body {
             background-color: #060608;
@@ -15,14 +15,13 @@
             font-family: 'Lexend', sans-serif;
         }
 
-        /* Верхняя панель (шапка) */
+        /* Шапка */
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* Наш утвержденный логотип */
         .brand-title {
             color: #ffffff;
             font-size: 1.2rem;
@@ -37,7 +36,6 @@
                 0 0 60px #ff0055;
         }
 
-        /* Плашка баланса как на образце */
         .balance-badge {
             background: #0d0d12;
             border: 1px solid rgba(0, 210, 255, 0.4);
@@ -71,10 +69,39 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+
+        /* Центральный логотип/заголовок */
+        .hero-logo-container {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 30px;
+        }
+
+        .hero-sub {
+            font-size: 0.75rem;
+            letter-spacing: 5px;
+            color: #7c7c85;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .hero-main {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 15px #ff0055,
+                0 0 30px #ff0055,
+                0 0 50px #ff0055;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Шапка приложения -->
     <div class="header-top">
         <div class="brand-title">LILIT</div>
         
@@ -85,6 +112,12 @@
                 <span class="balance-value">0</span>
             </div>
         </div>
+    </div>
+
+    <!-- Центральный заголовок-логотип -->
+    <div class="hero-logo-container">
+        <div class="hero-sub">L i l i t</div>
+        <div class="hero-main">GAME</div>
     </div>
 
     <script>
