@@ -116,7 +116,7 @@
             transform: rotate(-3deg);
         }
 
-        /* Блок меню / Кнопка «ИГРЫ» */
+        /* Блок меню */
         .menu-container {
             display: flex;
             flex-direction: column;
@@ -149,12 +149,21 @@
             gap: 14px;
         }
 
-        .card-icon {
+        /* Цвета мастей для иконок */
+        .card-icon-pink {
             color: #ff2a75;
             font-size: 1.1rem;
             width: 22px;
             text-align: center;
             text-shadow: 0 0 8px rgba(255, 42, 117, 0.5);
+        }
+
+        .card-icon-blue {
+            color: #00d2ff;
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(0, 210, 255, 0.5);
         }
 
         .card-title {
@@ -198,10 +207,26 @@
 
     <!-- Меню -->
     <div class="menu-container">
-        <div class="menu-card" onclick="alert('Раздел Игры')">
+        <div class="menu-card" onclick="alert('Игры')">
             <div class="menu-card-content">
-                <span class="card-icon">♠</span>
+                <span class="card-icon-pink">♠</span>
                 <span class="card-title">ИГРЫ</span>
+            </div>
+            <span class="arrow-icon">→</span>
+        </div>
+
+        <div class="menu-card" onclick="alert('Друзья')">
+            <div class="menu-card-content">
+                <span class="card-icon-blue">♣</span>
+                <span class="card-title">ДРУЗЬЯ</span>
+            </div>
+            <span class="arrow-icon">→</span>
+        </div>
+
+        <div class="menu-card" onclick="alert('Профиль')">
+            <div class="menu-card-content">
+                <span class="card-icon-pink">♦</span>
+                <span class="card-title">ПРОФИЛЬ</span>
             </div>
             <span class="arrow-icon">→</span>
         </div>
