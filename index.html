@@ -3,188 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LILIT GAME</title>
+    <title>Test Lilit Neon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
             background-color: #060608;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 16px;
+            padding: 24px;
             display: flex;
-            flex-direction: column;
-            min-height: 90vh;
-            box-sizing: border-box;
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-height: 100vh;
         }
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
+
+        /* Наша надпись Lilit с неоновым свечением */
         .brand-title {
+            font-family: 'Lexend', sans-serif;
+            /* Насыщенный неоново-розовый оттенок */
             color: #ff2a75;
-            letter-spacing: 3px;
-            font-weight: 700;
             font-size: 0.95rem;
-        }
-        .balance-badge {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 42, 117, 0.25);
-            border-radius: 20px;
-            padding: 5px 12px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 0 10px rgba(255, 42, 117, 0.1);
-        }
-        .sub-header-title {
-            text-align: center;
-            font-size: 0.6rem;
-            letter-spacing: 4px;
-            color: #7c7c85;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-        .main-heading {
-            text-align: center;
-            letter-spacing: 5px;
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #fff;
-            text-shadow: 0 0 18px rgba(255, 42, 117, 0.45);
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
-        .menu-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex-grow: 1;
-        }
-        .menu-card {
-            background: #111116;
-            border: 1px solid rgba(255, 42, 117, 0.22);
-            border-radius: 16px;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .menu-card:active {
-            transform: scale(0.98);
-            border-color: rgba(255, 42, 117, 0.6);
-        }
-        .menu-card-content {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .card-icon {
-            font-size: 1.1rem;
-            width: 22px;
-            text-align: center;
-        }
-        .card-title {
-            font-weight: 650;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        .arrow-icon {
-            color: #ff2a75;
-            font-size: 0.9rem;
-        }
-        .dev-badge-card {
-            background: #0d0d12;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #7c7c85;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            margin-top: 4px;
-        }
-        .dev-plus {
-            color: #ff2a75;
-            font-weight: bold;
-        }
-        .footer-copyright {
-            text-align: center;
-            font-size: 0.65rem;
+            font-weight: 700;
             letter-spacing: 3px;
-            color: #55555e;
             text-transform: uppercase;
-            margin-top: 30px;
-            margin-bottom: 10px;
+            /* Многослойное неоновое свечение: мягкий ореол + яркое ядро */
+            text-shadow: 
+                0 0 8px rgba(255, 42, 117, 0.6),
+                0 0 20px rgba(255, 42, 117, 0.4),
+                0 0 35px rgba(255, 42, 117, 0.2);
         }
-        .screen { display: none; }
-        .screen.active { display: flex; flex-direction: column; flex-grow: 1; }
     </style>
 </head>
 <body>
 
-    <!-- Главное меню -->
-    <div id="main-menu" class="screen active">
-        <div class="header-top">
-            <div class="brand-title">LILIT</div>
-            <div class="balance-badge">
-                <span>🎰</span>
-                <span id="user-balance">3 050</span>
-            </div>
-        </div>
-
-        <div class="sub-header-title">L i l i t</div>
-        <div class="main-heading">Game</div>
-
-        <div class="menu-list">
-            <div class="menu-card" onclick="alert('Раздел Игры')">
-                <div class="menu-card-content">
-                    <span class="card-icon" style="color: #ff2a75;">♠</span>
-                    <span class="card-title">ИГРЫ</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
-
-            <div class="menu-card" onclick="alert('Раздел Друзья')">
-                <div class="menu-card-content">
-                    <span class="card-icon" style="color: #00d2ff;">♣</span>
-                    <span class="card-title">ДРУЗЬЯ</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
-
-            <div class="menu-card" onclick="alert('Раздел Профиль')">
-                <div class="menu-card-content">
-                    <span class="card-icon" style="color: #ff2a75;">♦</span>
-                    <span class="card-title">ПРОФИЛЬ</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
-
-            <div class="menu-card" onclick="alert('Выход')">
-                <div class="menu-card-content">
-                    <span class="card-icon" style="color: #50e3c2;">♥</span>
-                    <span class="card-title">ВЫХОД</span>
-                </div>
-                <span class="arrow-icon" style="color: #7c7c85;">✕</span>
-            </div>
-
-            <div class="dev-badge-card">
-                <span class="dev-plus">+</span>
-                <span>В РАЗРАБОТКЕ</span>
-            </div>
-        </div>
-
-        <div class="footer-copyright">Lilit Game</div>
-    </div>
+    <div class="brand-title">LILIT</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
