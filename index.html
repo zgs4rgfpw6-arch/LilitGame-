@@ -639,7 +639,6 @@
 
         let userGameId = "";
         
-        // Моковые базы для демонстрации поиска и запросов (в будущем заменится на сервер)
         let mockUsersDB = [
             { id: "0042", name: "Кирилл", avatar: "🤖" },
             { id: "7777", name: "Victoria_Queen", avatar: "👑" },
@@ -648,7 +647,7 @@
 
         let myFriends = [];
         let incomingRequests = [
-            { id: "7777", name: "Victoria_Queen", avatar: "👑" } // Для примера сразу дадим один входящий запрос
+            { id: "7777", name: "Victoria_Queen", avatar: "👑" }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -713,7 +712,6 @@
             });
         }
 
-        // Переключение вкладок в разделе Друзья
         function switchFriendTab(tabId, tabElement) {
             document.querySelectorAll('.friends-content-section').forEach(sec => {
                 sec.classList.remove('active');
@@ -725,10 +723,9 @@
             tabElement.classList.add('active');
         }
 
-        // Поиск пользователя по ID
         function searchUserById() {
             let query = document.getElementById('search-id-input').value.trim();
-            query = query.replace('#', ''); // убираем решетку, если ввели
+            query = query.replace('#', '');
             const container = document.getElementById('search-result-container');
 
             if (!query || query.length < 4) {
@@ -741,7 +738,6 @@
                 return;
             }
 
-            // Ищем в моковой базе (можно добавить поиск себя или других)
             let foundUser = mockUsersDB.find(u => u.id === query);
 
             if (foundUser) {
@@ -762,7 +758,6 @@
             }
         }
 
-        // Отправка запроса в друзья
         function sendFriendRequest(targetId) {
             const btn = document.getElementById(`req-btn-${targetId}`);
             btn.textContent = "ЗАПРОС ОТПРАВЛЕН";
@@ -772,7 +767,6 @@
             btn.disabled = true;
         }
 
-        // Принять входящий запрос
         function acceptRequest(targetId) {
             let reqIndex = incomingRequests.findIndex(r => r.id === targetId);
             if (reqIndex !== -1) {
@@ -782,15 +776,12 @@
             }
         }
 
-        // Отклонить входящий запрос
         function rejectRequest(targetId) {
             incomingRequests = incomingRequests.filter(r => r.id !== targetId);
             updateFriendsUI();
         }
 
-        // Обновление интерфейса списков друзей и счетчиков на вкладках
         function updateFriendsUI() {
-            // 1. Обновляем вкладку Списка друзей
             const friendsContainer = document.getElementById('friends-container');
             if (myFriends.length === 0) {
                 friendsContainer.innerHTML = `<div class="empty-text">У вас пока нет друзей в списке. Найдите игрока по ID!</div>`;
@@ -809,7 +800,6 @@
                 `).join('');
             }
 
-            // 2. Обновляем вкладку Запросов
             const reqContainer = document.getElementById('requests-container');
             if (incomingRequests.length === 0) {
                 reqContainer.innerHTML = `<div class="empty-text">Нет новых входящих запросов.</div>`;
@@ -831,7 +821,6 @@
                 `).join('');
             }
 
-            // Обновляем тексты на кнопках-вкладках
             document.querySelectorAll('.friend-tab')[0].textContent = `Список (${myFriends.length})`;
             document.querySelectorAll('.friend-tab')[2].textContent = `Запросы (${incomingRequests.length})`;
         }
