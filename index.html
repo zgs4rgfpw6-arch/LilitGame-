@@ -342,12 +342,19 @@
 
 
     <script>
-        // Универсальная функция вибрации (Telegram API + запасной вариант для мобильных браузеров)
+        // Усовершенствованная функция вибрации
         function triggerHaptic() {
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-            } else if (navigator.vibrate) {
-                navigator.vibrate(35);
+            try {
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                    return;
+                }
+            } catch (e) {
+                console.log(e);
+            }
+
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
             }
         }
 
