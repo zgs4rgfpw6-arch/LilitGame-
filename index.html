@@ -306,6 +306,168 @@
             transform: scale(0.95);
             background: rgba(255, 42, 117, 0.25);
         }
+
+        /* Стили для раздела Друзья */
+        .friends-tabs {
+            display: flex;
+            gap: 8px;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        .friend-tab {
+            flex: 1;
+            background: #111116;
+            border: 1px solid rgba(255, 42, 117, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+            color: #8c8c99;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .friend-tab.active {
+            background: rgba(255, 42, 117, 0.15);
+            border-color: rgba(255, 42, 117, 0.6);
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 42, 117, 0.15);
+        }
+
+        .friends-content-section {
+            display: none;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .friends-content-section.active {
+            display: block;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: #111116;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: rgba(0, 210, 255, 0.8);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #ff0055, #ff2a75);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            padding: 0 20px;
+            font-family: 'Lexend', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.3);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .friend-card {
+            background: #111116;
+            border: 1px solid rgba(255, 42, 117, 0.25);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(255, 42, 117, 0.05);
+        }
+
+        .friend-card-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .friend-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #0d0d12;
+            border: 1px solid rgba(255, 42, 117, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .friend-name {
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .friend-id {
+            color: #ff2a75;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .mini-btn {
+            background: rgba(0, 210, 255, 0.15);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 10px;
+            color: #00d2ff;
+            padding: 6px 12px;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mini-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mini-btn-danger {
+            background: rgba(255, 42, 117, 0.15);
+            border-color: rgba(255, 42, 117, 0.4);
+            color: #ff2a75;
+        }
+
+        .empty-text {
+            color: #8c8c99;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
@@ -339,7 +501,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Друзья')">
+            <div class="menu-card" onclick="switchScreen('screen-friends')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">ДРУЗЬЯ</span>
@@ -427,6 +589,46 @@
     </div>
 
 
+    <!-- ЭКРАН 4: ДРУЗЬЯ -->
+    <div id="screen-friends" class="screen">
+        <div class="header-top">
+            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
+            <h2 class="section-title">Друзья</h2>
+            <div style="width: 70px;"></div>
+        </div>
+
+        <!-- Вкладки друзей -->
+        <div class="friends-tabs">
+            <div class="friend-tab active" onclick="switchFriendTab('friends-list-tab', this)">Список (0)</div>
+            <div class="friend-tab" onclick="switchFriendTab('friends-add-tab', this)">Поиск</div>
+            <div class="friend-tab" onclick="switchFriendTab('friends-req-tab', this)">Запросы (0)</div>
+        </div>
+
+        <!-- 1. Список друзей -->
+        <div id="friends-list-tab" class="friends-content-section active">
+            <div id="friends-container">
+                <div class="empty-text">У вас пока нет друзей в списке. Найдите игрока по ID!</div>
+            </div>
+        </div>
+
+        <!-- 2. Поиск и добавление -->
+        <div id="friends-add-tab" class="friends-content-section">
+            <div class="search-box">
+                <input type="text" id="search-id-input" class="search-input" placeholder="Введите ID (#XXXX)..." maxlength="5">
+                <button class="action-btn" onclick="searchUserById()">Найти</button>
+            </div>
+            <div id="search-result-container"></div>
+        </div>
+
+        <!-- 3. Входящие запросы -->
+        <div id="friends-req-tab" class="friends-content-section">
+            <div id="requests-container">
+                <div class="empty-text">Нет новых входящих запросов.</div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
@@ -436,6 +638,18 @@
         }
 
         let userGameId = "";
+        
+        // Моковые базы для демонстрации поиска и запросов (в будущем заменится на сервер)
+        let mockUsersDB = [
+            { id: "0042", name: "Кирилл", avatar: "🤖" },
+            { id: "7777", name: "Victoria_Queen", avatar: "👑" },
+            { id: "1337", name: "CyberDemon", avatar: "🔥" }
+        ];
+
+        let myFriends = [];
+        let incomingRequests = [
+            { id: "7777", name: "Victoria_Queen", avatar: "👑" } // Для примера сразу дадим один входящий запрос
+        ];
 
         document.addEventListener('DOMContentLoaded', () => {
             let tgUser = null;
@@ -455,7 +669,6 @@
                 };
             }
 
-            // Твой эксклюзивный ID "0001" для аккаунта 6912925240
             if (tgUser.id === 6912925240) {
                 userGameId = "0001";
             } else {
@@ -484,6 +697,8 @@
                 avatarImg.style.display = 'block';
                 document.getElementById('tg-avatar-placeholder').style.display = 'none';
             }
+
+            updateFriendsUI();
         });
 
         function copyGameId() {
@@ -496,6 +711,134 @@
                     badge.textContent = originalText;
                 }, 1500);
             });
+        }
+
+        // Переключение вкладок в разделе Друзья
+        function switchFriendTab(tabId, tabElement) {
+            document.querySelectorAll('.friends-content-section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.querySelectorAll('.friend-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            tabElement.classList.add('active');
+        }
+
+        // Поиск пользователя по ID
+        function searchUserById() {
+            let query = document.getElementById('search-id-input').value.trim();
+            query = query.replace('#', ''); // убираем решетку, если ввели
+            const container = document.getElementById('search-result-container');
+
+            if (!query || query.length < 4) {
+                container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Введите корректный 4-значный ID</div>`;
+                return;
+            }
+
+            if (query === userGameId) {
+                container.innerHTML = `<div class="empty-text">Это ваш собственный ID!</div>`;
+                return;
+            }
+
+            // Ищем в моковой базе (можно добавить поиск себя или других)
+            let foundUser = mockUsersDB.find(u => u.id === query);
+
+            if (foundUser) {
+                container.innerHTML = `
+                    <div class="friend-card" style="margin-top: 15px;">
+                        <div class="friend-card-info">
+                            <div class="friend-avatar">${foundUser.avatar}</div>
+                            <div>
+                                <div class="friend-name">${foundUser.name}</div>
+                                <div class="friend-id">ID: #${foundUser.id}</div>
+                            </div>
+                        </div>
+                        <button class="mini-btn" onclick="sendFriendRequest('${foundUser.id}')" id="req-btn-${foundUser.id}">Добавить</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="empty-text">Игрок с ID #${query} не найден</div>`;
+            }
+        }
+
+        // Отправка запроса в друзья
+        function sendFriendRequest(targetId) {
+            const btn = document.getElementById(`req-btn-${targetId}`);
+            btn.textContent = "ЗАПРОС ОТПРАВЛЕН";
+            btn.style.color = "#8c8c99";
+            btn.style.borderColor = "rgba(140, 140, 153, 0.4)";
+            btn.style.background = "transparent";
+            btn.disabled = true;
+        }
+
+        // Принять входящий запрос
+        function acceptRequest(targetId) {
+            let reqIndex = incomingRequests.findIndex(r => r.id === targetId);
+            if (reqIndex !== -1) {
+                let friend = incomingRequests.splice(reqIndex, 1)[0];
+                myFriends.push(friend);
+                updateFriendsUI();
+            }
+        }
+
+        // Отклонить входящий запрос
+        function rejectRequest(targetId) {
+            incomingRequests = incomingRequests.filter(r => r.id !== targetId);
+            updateFriendsUI();
+        }
+
+        // Обновление интерфейса списков друзей и счетчиков на вкладках
+        function updateFriendsUI() {
+            // 1. Обновляем вкладку Списка друзей
+            const friendsContainer = document.getElementById('friends-container');
+            if (myFriends.length === 0) {
+                friendsContainer.innerHTML = `<div class="empty-text">У вас пока нет друзей в списке. Найдите игрока по ID!</div>`;
+            } else {
+                friendsContainer.innerHTML = myFriends.map(f => `
+                    <div class="friend-card">
+                        <div class="friend-card-info">
+                            <div class="friend-avatar">${f.avatar}</div>
+                            <div>
+                                <div class="friend-name">${f.name}</div>
+                                <div class="friend-id">ID: #${f.id}</div>
+                            </div>
+                        </div>
+                        <button class="mini-btn mini-btn-danger" onclick="removeFriend('${f.id}')">Удалить</button>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Обновляем вкладку Запросов
+            const reqContainer = document.getElementById('requests-container');
+            if (incomingRequests.length === 0) {
+                reqContainer.innerHTML = `<div class="empty-text">Нет новых входящих запросов.</div>`;
+            } else {
+                reqContainer.innerHTML = incomingRequests.map(r => `
+                    <div class="friend-card">
+                        <div class="friend-card-info">
+                            <div class="friend-avatar">${r.avatar}</div>
+                            <div>
+                                <div class="friend-name">${r.name}</div>
+                                <div class="friend-id">ID: #${r.id}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="mini-btn" onclick="acceptRequest('${r.id}')">Принять</button>
+                            <button class="mini-btn mini-btn-danger" onclick="rejectRequest('${r.id}')">Х</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Обновляем тексты на кнопках-вкладках
+            document.querySelectorAll('.friend-tab')[0].textContent = `Список (${myFriends.length})`;
+            document.querySelectorAll('.friend-tab')[2].textContent = `Запросы (${incomingRequests.length})`;
+        }
+
+        function removeFriend(friendId) {
+            myFriends = myFriends.filter(f => f.id !== friendId);
+            updateFriendsUI();
         }
     </script>
 </body>
