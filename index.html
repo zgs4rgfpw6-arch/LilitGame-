@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Lilit</title>
+    <title>Test Lilit Header</title>
     
-    <!-- Надежное подключение шрифта Lexend через CSS -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@600;700&display=swap');
 
         body {
             background-color: #060608;
             margin: 0;
-            padding: 24px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: flex-start;
-            min-height: 100vh;
+            padding: 16px;
+            font-family: 'Lexend', sans-serif;
         }
 
+        /* Верхняя панель (шапка) */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Наш утвержденный логотип */
         .brand-title {
-            font-family: 'Lexend', sans-serif;
-            /* Белое сияющее ядро текста для максимальной читаемости */
             color: #ffffff;
             font-size: 1.2rem;
             font-weight: 700;
             letter-spacing: 4px;
             text-transform: uppercase;
-            
-            /* Мощный неоновый шлейф и цветное свечение вокруг */
             text-shadow: 
                 0 0 4px #fff,
                 0 0 10px #ff0055,
@@ -36,11 +36,56 @@
                 0 0 35px #ff0055,
                 0 0 60px #ff0055;
         }
+
+        /* Плашка баланса как на образце */
+        .balance-badge {
+            background: #0d0d12;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 24px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.15);
+        }
+
+        .balance-plus {
+            color: #ff2a75;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .balance-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip-icon {
+            font-size: 1rem;
+        }
+
+        .balance-value {
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="brand-title">LILIT</div>
+    <div class="header-top">
+        <div class="brand-title">LILIT</div>
+        
+        <div class="balance-badge">
+            <span class="balance-plus">+</span>
+            <div class="balance-chip">
+                <span class="chip-icon">🎰</span>
+                <span class="balance-value">0</span>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
