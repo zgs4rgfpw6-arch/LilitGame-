@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Lilit Neon</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Test Lilit</title>
     
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Надежное подключение шрифта Lexend через CSS -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@700&display=swap');
+
         body {
             background-color: #060608;
             margin: 0;
@@ -20,21 +19,22 @@
             min-height: 100vh;
         }
 
-        /* Наша надпись Lilit с неоновым свечением */
-                .brand-title {
+        .brand-title {
             font-family: 'Lexend', sans-serif;
-            /* Более чистый, насыщенный и яркий розово-малиновый неон */
-            color: #ff1f71;
-            font-size: 1.05rem;
+            /* Белое сияющее ядро текста для максимальной читаемости */
+            color: #ffffff;
+            font-size: 1.2rem;
             font-weight: 700;
-            letter-spacing: 3.5px;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            /* Плотное неоновое свечение с ярким ядром */
+            
+            /* Мощный неоновый шлейф и цветное свечение вокруг */
             text-shadow: 
-                0 0 5px #ff1f71,
-                0 0 12px rgba(255, 31, 113, 0.8),
-                0 0 25px rgba(255, 31, 113, 0.5),
-                0 0 45px rgba(255, 31, 113, 0.3);
+                0 0 4px #fff,
+                0 0 10px #ff0055,
+                0 0 20px #ff0055,
+                0 0 35px #ff0055,
+                0 0 60px #ff0055;
         }
     </style>
 </head>
