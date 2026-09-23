@@ -15,11 +15,20 @@
             font-family: 'Lexend', sans-serif;
         }
 
-        /* Шапка */
+        /* Управление экранами */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        /* Общая шапка */
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 25px;
         }
 
         .brand-title {
@@ -66,11 +75,46 @@
             letter-spacing: 0.5px;
         }
 
-        /* Центральный логотип */
+        /* Кнопка назад */
+        .back-btn {
+            background: #111116;
+            border: 1px solid rgba(255, 42, 117, 0.3);
+            border-radius: 12px;
+            color: #ffffff;
+            padding: 8px 16px;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+            border-color: rgba(255, 42, 117, 0.7);
+        }
+
+        .section-title {
+            color: #ffffff;
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 15px #ff0055;
+            margin: 0;
+        }
+
+        /* Центральный логотип главного экрана */
         .logo-box-container {
             display: flex;
             justify-content: center;
-            margin-top: 35px;
+            margin-top: 15px;
             margin-bottom: 30px;
         }
 
@@ -116,7 +160,7 @@
             transform: rotate(-3deg);
         }
 
-        /* Блок меню */
+        /* Общие контейнеры меню */
         .menu-container {
             display: flex;
             flex-direction: column;
@@ -149,7 +193,7 @@
             gap: 14px;
         }
 
-        /* Цвета мастей для иконок */
+        /* Иконки мастей */
         .card-icon-pink {
             color: #ff2a75;
             font-size: 1.1rem;
@@ -192,63 +236,108 @@
 </head>
 <body>
 
-    <!-- Шапка приложения -->
-    <div class="header-top">
-        <div class="brand-title">LILIT</div>
-        
-        <div class="balance-badge">
-            <span class="balance-plus">+</span>
-            <div class="balance-chip">
-                <span>💳</span>
-                <span class="balance-value">0</span>
+    <!-- ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
+    <div id="screen-main" class="screen active">
+        <div class="header-top">
+            <div class="brand-title">LILIT</div>
+            <div class="balance-badge">
+                <span class="balance-plus">+</span>
+                <div class="balance-chip">
+                    <span>💳</span>
+                    <span class="balance-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="logo-box-container">
+            <div class="logo-frame">
+                <h1 class="logo-lilit">LILIT</h1>
+                <p class="logo-game">game</p>
+            </div>
+        </div>
+
+        <div class="menu-container">
+            <div class="menu-card" onclick="switchScreen('screen-games')">
+                <div class="menu-card-content">
+                    <span class="card-icon-pink">♠</span>
+                    <span class="card-title">ИГРЫ</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
+
+            <div class="menu-card" onclick="alert('Друзья')">
+                <div class="menu-card-content">
+                    <span class="card-icon-blue">♣</span>
+                    <span class="card-title">ДРУЗЬЯ</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
+
+            <div class="menu-card" onclick="alert('Профиль')">
+                <div class="menu-card-content">
+                    <span class="card-icon-pink">♦</span>
+                    <span class="card-title">ПРОФИЛЬ</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
+
+            <div class="menu-card" onclick="alert('Выход')">
+                <div class="menu-card-content">
+                    <span class="card-icon-mint">♥</span>
+                    <span class="card-title">ВЫХОД</span>
+                </div>
+                <span class="arrow-icon">→</span>
             </div>
         </div>
     </div>
 
-    <!-- Центральный логотип -->
-    <div class="logo-box-container">
-        <div class="logo-frame">
-            <h1 class="logo-lilit">LILIT</h1>
-            <p class="logo-game">game</p>
+
+    <!-- ЭКРАН 2: ИГРЫ -->
+    <div id="screen-games" class="screen">
+        <div class="header-top">
+            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
+            <h2 class="section-title">Игры</h2>
+            <div style="width: 70px;"></div>
+        </div>
+
+        <div class="menu-container" style="margin-top: 20px;">
+            <div class="menu-card" onclick="alert('Запуск игры: Дурак')">
+                <div class="menu-card-content">
+                    <span class="card-icon-pink">♠</span>
+                    <span class="card-title">ДУРАК</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
+
+            <div class="menu-card" onclick="alert('Запуск игры: Blackjack')">
+                <div class="menu-card-content">
+                    <span class="card-icon-blue">♣</span>
+                    <span class="card-title">BLACKJACK</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
+
+            <div class="menu-card" onclick="alert('Запуск игры: Рулетка')">
+                <div class="menu-card-content">
+                    <span class="card-icon-mint">♥</span>
+                    <span class="card-title">РУЛЕТКА</span>
+                </div>
+                <span class="arrow-icon">→</span>
+            </div>
         </div>
     </div>
 
-    <!-- Меню -->
-    <div class="menu-container">
-        <div class="menu-card" onclick="alert('Игры')">
-            <div class="menu-card-content">
-                <span class="card-icon-pink">♠</span>
-                <span class="card-title">ИГРЫ</span>
-            </div>
-            <span class="arrow-icon">→</span>
-        </div>
-
-        <div class="menu-card" onclick="alert('Друзья')">
-            <div class="menu-card-content">
-                <span class="card-icon-blue">♣</span>
-                <span class="card-title">ДРУЗЬЯ</span>
-            </div>
-            <span class="arrow-icon">→</span>
-        </div>
-
-        <div class="menu-card" onclick="alert('Профиль')">
-            <div class="menu-card-content">
-                <span class="card-icon-pink">♦</span>
-                <span class="card-title">ПРОФИЛЬ</span>
-            </div>
-            <span class="arrow-icon">→</span>
-        </div>
-
-        <div class="menu-card" onclick="alert('Выход')">
-            <div class="menu-card-content">
-                <span class="card-icon-mint">♥</span>
-                <span class="card-title">ВЫХОД</span>
-            </div>
-            <span class="arrow-icon">→</span>
-        </div>
-    </div>
 
     <script>
+        // Функция переключения экранов
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Инициализация Telegram WebApp
         document.addEventListener('DOMContentLoaded', () => {
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.ready();
