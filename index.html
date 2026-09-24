@@ -422,6 +422,12 @@
             overflow: hidden;
         }
 
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .friend-name {
             color: #ffffff;
             font-size: 0.95rem;
@@ -581,7 +587,7 @@
             </div>
         </div>
 
-        <!-- Кнопка ежедневного бонуса теперь в профиле -->
+        <!-- Кнопка ежедневного бонуса -->
         <div class="menu-container">
             <div class="menu-card" id="daily-bonus-card" onclick="claimDailyBonus()">
                 <div class="menu-card-content">
@@ -783,6 +789,14 @@
             tabElement.classList.add('active');
         }
 
+        function renderAvatarHtml(avatarValue) {
+            if (!avatarValue) return '👤';
+            if (avatarValue.startsWith('http')) {
+                return `<img src="${avatarValue}" alt="Avatar">`;
+            }
+            return avatarValue;
+        }
+
         async function searchUserById() {
             let query = document.getElementById('search-id-input').value.trim();
             const container = document.getElementById('search-result-container');
@@ -808,7 +822,7 @@
                 container.innerHTML = `
                     <div class="friend-card" style="margin-top: 15px;">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${foundUser.avatar || '👤'}</div>
+                            <div class="friend-avatar">${renderAvatarHtml(foundUser.avatar)}</div>
                             <div>
                                 <div class="friend-name">${foundUser.name}</div>
                                 <div class="friend-id">ID: ${foundUser.id}</div>
@@ -883,7 +897,7 @@
                 friendsContainer.innerHTML = myFriends.map(f => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${f.avatar || '👤'}</div>
+                            <div class="friend-avatar">${renderAvatarHtml(f.avatar)}</div>
                             <div>
                                 <div class="friend-name">${f.name}</div>
                                 <div class="friend-id">ID: ${f.id}</div>
@@ -901,7 +915,7 @@
                 reqContainer.innerHTML = incomingRequests.map(r => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${r.avatar || '👤'}</div>
+                            <div class="friend-avatar">${renderAvatarHtml(r.avatar)}</div>
                             <div>
                                 <div class="friend-name">${r.name}</div>
                                 <div class="friend-id">ID: ${r.id}</div>
