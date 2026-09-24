@@ -67,6 +67,11 @@ init_db()
 @app.post("/api/auth")
 def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
     init_db()
+    
+    # Жестко закрепляем ID-0001 за твоим Telegram ID
+    if tg_id == "6912925240":
+        game_id = "ID-0001"
+        
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT score FROM users WHERE tg_id = %s", (tg_id,))
@@ -74,7 +79,10 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     
     if row:
         score = row[0]
-        cursor.execute("UPDATE users SET name = %s, username = %s, avatar = %s WHERE tg_id = %s", (name, username, avatar, tg_id))
+        cursor.execute(
+            "UPDATE users SET name = %s, username = %s, avatar = %s, game_id = %s WHERE tg_id = %s", 
+            (name, username, avatar, game_id, tg_id)
+        )
     else:
         score = 100
         cursor.execute(
@@ -84,7 +92,7 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     conn.commit()
     cursor.close()
     conn.close()
-    return {"status": "ok", "score": score}
+    return {"status": "ok", "score": score, "game_id": game_id}
 
 @app.get("/api/users/search")
 def search_user(game_id: str):
