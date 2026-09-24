@@ -39,7 +39,7 @@ def init_db():
 init_db()
 
 @app.post("/api/auth")
-def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = ""):
+def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
     conn = sqlite3.connect("lilit.db")
     cursor = conn.cursor()
     cursor.execute("SELECT score FROM users WHERE tg_id = ?", (tg_id,))
@@ -47,12 +47,12 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "")
     
     if row:
         score = row[0]
-        cursor.execute("UPDATE users SET name = ?, username = ? WHERE tg_id = ?", (name, username, tg_id))
+        cursor.execute("UPDATE users SET name = ?, username = ?, avatar = ? WHERE tg_id = ?", (name, username, avatar, tg_id))
     else:
         score = 100
         cursor.execute(
-            "INSERT INTO users (tg_id, game_id, name, username, score) VALUES (?, ?, ?, ?, ?)",
-            (tg_id, game_id, name, username, score)
+            "INSERT INTO users (tg_id, game_id, name, username, score, avatar) VALUES (?, ?, ?, ?, ?, ?)",
+            (tg_id, game_id, name, username, score, avatar)
         )
     conn.commit()
     conn.close()
@@ -60,9 +60,14 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "")
 
 @app.get("/api/users/search")
 def search_user(game_id: str):
+    clean_id = game_id.strip()
+    # Поддерживаем поиск как по чистым цифрам (8240), так и с префиксом (ID-8240)
+    search_id_1 = clean_id
+    search_id_2 = f"ID-{clean_id}" if not clean_id.upper().startswith("ID-") else clean_id
+
     conn = sqlite3.connect("lilit.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = ?", (game_id,))
+    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = ? OR game_id = ?", (search_id_1, search_id_2))
     row = cursor.fetchone()
     conn.close()
     
