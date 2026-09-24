@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import psycopg2
 from urllib.parse import urlparse
+from datetime import date
 
 app = FastAPI()
 
@@ -35,14 +36,16 @@ def init_db():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        # Изменили дефолтный score на 5000 и добавили поле last_bonus_date для ежедневного бонуса
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 tg_id TEXT PRIMARY KEY,
                 game_id TEXT UNIQUE,
                 name TEXT,
                 username TEXT,
-                score INTEGER DEFAULT 100,
-                avatar TEXT DEFAULT '💀'
+                score INTEGER DEFAULT 5000,
+                avatar TEXT DEFAULT '💀',
+                last_bonus_date TEXT DEFAULT NULL
             )
         ''')
         cursor.execute('''
@@ -85,8 +88,7 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
             (name, username, avatar, game_id, tg_id)
         )
     else:
-        score = 100
-        # Если такого tg_id еще не было, но ID-0001 вдруг занят, очищаем старого владельца или вставляем
+        score = 5000  # Новый игрок получает 5000 фишек
         cursor.execute(
             "INSERT INTO users (tg_id, game_id, name, username, score, avatar) VALUES (%s, %s, %s, %s, %s, %s)",
             (tg_id, game_id, name, username, score, avatar)
@@ -95,6 +97,42 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     cursor.close()
     conn.close()
     return {"status": "ok", "score": score, "game_id": game_id}
+
+
+# Новый эндпоинт для ежедневного бонуса
+@app.post("/api/bonus")
+def claim_bonus(game_id: str):
+    init_db()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT score, last_bonus_date FROM users WHERE game_id = %s", (game_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Игрок не найден")
+        
+    score, last_bonus_date = row
+    today = date.today().isoformat()
+    
+    if last_bonus_date == today:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=400, detail="Бонус уже получен сегодня!")
+        
+    new_score = score + 3000
+    cursor.execute(
+        "UPDATE users SET score = %s, last_bonus_date = %s WHERE game_id = %s",
+        (new_score, today, game_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    return {"status": "ok", "score": new_score, "message": "Бонус успешно начислен!"}
+
 
 @app.get("/api/users/search")
 def search_user(game_id: str):
