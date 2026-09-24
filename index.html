@@ -487,6 +487,18 @@
         </div>
 
         <div class="menu-container">
+            <!-- Кнопка ежедневного бонуса -->
+            <div class="menu-card" id="daily-bonus-card" onclick="claimDailyBonus()">
+                <div class="menu-card-content">
+                    <span class="card-icon-mint">🎁</span>
+                    <div>
+                        <div class="card-title">БОНУС</div>
+                        <div style="font-size: 0.75rem; color: #50e3c2; margin-top: 2px;">+3 000 фишек</div>
+                    </div>
+                </div>
+                <span style="font-size: 0.85rem; color: #50e3c2; font-weight: 600;" id="bonus-status-text">ЗАБРАТЬ</span>
+            </div>
+
             <div class="menu-card" onclick="switchScreen('screen-games')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
@@ -709,10 +721,36 @@
                     document.getElementById('header-balance').textContent = data.score;
                 }
                 
-                // Подтягиваем данные друзей при старте
                 loadAllData();
             } catch (error) {
                 console.error("Ошибка связи с сервером:", error);
+            }
+        }
+
+        async function claimDailyBonus() {
+            try {
+                const response = await fetch(`${API_URL}/api/bonus?game_id=${currentUserData.game_id}`, {
+                    method: "POST"
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUserData.score = data.score;
+                    document.querySelector('.balance-value').textContent = data.score;
+                    document.getElementById('header-balance').textContent = data.score;
+                    
+                    const statusText = document.getElementById('bonus-status-text');
+                    statusText.textContent = "ПОЛУЧЕНО";
+                    document.getElementById('daily-bonus-card').style.opacity = "0.6";
+                    document.getElementById('daily-bonus-card').style.pointerEvents = "none";
+                    
+                    alert("Бонус +3 000 фишек успешно зачислен!");
+                } else {
+                    alert(data.message || "Бонус можно получать только раз в сутки!");
+                }
+            } catch (error) {
+                console.error("Ошибка получения бонуса:", error);
+                alert("Ошибка соединения с сервером");
             }
         }
 
@@ -804,7 +842,6 @@
             }
         }
 
-        // Загрузка входящих запросов с бэкенда
         async function loadFriendRequests() {
             if (!currentUserData.game_id) return;
             try {
@@ -816,7 +853,6 @@
             }
         }
 
-        // Загрузка подтвержденного списка друзей с бэкенда
         async function loadFriendsList() {
             if (!currentUserData.game_id) return;
             try {
@@ -828,7 +864,6 @@
             }
         }
 
-        // Комплексная загрузка (и список, и запросы)
         function loadAllData() {
             loadFriendsList();
             loadFriendRequests();
@@ -884,7 +919,7 @@
                     method: "POST"
                 });
                 if (response.ok) {
-                    loadAllData(); // Перезагружаем списки с сервера
+                    loadAllData();
                 }
             } catch (error) {
                 console.error("Ошибка при принятии заявки:", error);
@@ -901,7 +936,7 @@
                     loadAllData();
                 }
             } catch (error) {
-                console.error("Ошибка при отклонении запроса:", error);
+                console.error("Ошибка при отклонении заявки:", error);
             }
         }
 
