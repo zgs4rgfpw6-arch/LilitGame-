@@ -83,9 +83,21 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
 @app.get("/api/users/search")
 def search_user(game_id: str):
     clean_id = game_id.strip()
+    
+    # Делаем поиск гибким: проверяем и введенный вариант, и вариант с добавлением/удалением "ID-"
+    if clean_id.upper().startswith("ID-"):
+        search_val_1 = clean_id
+        search_val_2 = clean_id.replace("ID-", "").replace("id-", "")
+    else:
+        search_val_1 = clean_id
+        search_val_2 = f"ID-{clean_id}"
+
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = %s", (clean_id,))
+    cursor.execute(
+        "SELECT game_id, name, avatar FROM users WHERE game_id = %s OR game_id = %s OR game_id ILIKE %s", 
+        (search_val_1, search_val_2, f"%{clean_id}%")
+    )
     row = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -94,6 +106,7 @@ def search_user(game_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     
     return {"id": row[0], "name": row[1], "avatar": row[2]}
+
 
 @app.post("/api/friends/request")
 def send_request(user_game_id: str, target_game_id: str):
