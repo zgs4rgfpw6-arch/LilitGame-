@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import requests
 import psycopg2
 from urllib.parse import urlparse
 from datetime import date
@@ -16,6 +17,8 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+# Токен вашего бота (пропишите переменную BOT_TOKEN в настройках Render)
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
 def get_db_connection():
     parsed_url = urlparse(DATABASE_URL)
@@ -36,7 +39,6 @@ def init_db():
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        # Изменили дефолтный score на 5000 и добавили поле last_bonus_date для ежедневного бонуса
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 tg_id TEXT PRIMARY KEY,
@@ -71,7 +73,6 @@ init_db()
 def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
     init_db()
     
-    # Жестко закрепляем ID-0001 за твоим Telegram ID на уровне сервера
     if tg_id == "6912925240":
         game_id = "ID-0001"
         
@@ -82,13 +83,12 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     
     if row:
         score = row[0]
-        # Принудительно обновляем game_id и остальные данные
         cursor.execute(
             "UPDATE users SET name = %s, username = %s, avatar = %s, game_id = %s WHERE tg_id = %s", 
             (name, username, avatar, game_id, tg_id)
         )
     else:
-        score = 5000  # Новый игрок получает 5000 фишек
+        score = 5000
         cursor.execute(
             "INSERT INTO users (tg_id, game_id, name, username, score, avatar) VALUES (%s, %s, %s, %s, %s, %s)",
             (tg_id, game_id, name, username, score, avatar)
@@ -99,7 +99,6 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     return {"status": "ok", "score": score, "game_id": game_id}
 
 
-# Новый эндпоинт для ежедневного бонуса
 @app.post("/api/bonus")
 def claim_bonus(game_id: str):
     init_db()
@@ -132,6 +131,33 @@ def claim_bonus(game_id: str):
     conn.close()
     
     return {"status": "ok", "score": new_score, "message": "Бонус успешно начислен!"}
+
+
+@app.get("/api/user/avatar")
+def get_telegram_avatar(tg_id: str):
+    try:
+        if not BOT_TOKEN:
+            return {"avatar_url": None}
+            
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUserProfilePhotos?user_id={tg_id}&limit=1"
+        response = requests.get(url).json()
+        
+        if response.get("ok") and response.get("result", {}).get("total_count", 0) > 0:
+            photos = response["result"]["photos"][0]
+            file_id = photos[-1]["file_id"]
+            
+            file_path_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+            file_response = requests.get(file_path_url).json()
+            
+            if file_response.get("ok"):
+                file_path = file_response["result"]["file_path"]
+                download_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+                return {"avatar_url": download_url}
+        
+        return {"avatar_url": None}
+    except Exception as e:
+        print(f"Ошибка получения аватара: {e}")
+        return {"avatar_url": None}
 
 
 @app.get("/api/users/search")
