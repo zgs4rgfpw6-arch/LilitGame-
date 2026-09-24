@@ -17,6 +17,7 @@
             padding: 16px;
             padding-top: 90px;
             font-family: 'Lexend', sans-serif;
+            color: #ffffff;
         }
 
         .screen {
@@ -307,7 +308,6 @@
             background: rgba(255, 42, 117, 0.25);
         }
 
-        /* Стили для раздела Друзья */
         .friends-tabs {
             display: flex;
             gap: 8px;
@@ -480,7 +480,7 @@
                 <span class="balance-plus">+</span>
                 <div class="balance-chip">
                     <span>💳</span>
-                    <span class="balance-value">0</span>
+                    <span class="balance-value" id="header-balance">0</span>
                 </div>
             </div>
         </div>
@@ -517,7 +517,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Выход')">
+            <div class="menu-card" onclick="if(window.Telegram?.WebApp) window.Telegram.WebApp.close(); else alert('Выход');">
                 <div class="menu-card-content">
                     <span class="card-icon-mint">♥</span>
                     <span class="card-title">ВЫХОД</span>
@@ -614,7 +614,7 @@
         <!-- 2. Поиск и добавление -->
         <div id="friends-add-tab" class="friends-content-section">
             <div class="search-box">
-                <input type="text" id="search-id-input" class="search-input" placeholder="Введите ID (#XXXX)..." maxlength="5">
+                <input type="text" id="search-id-input" class="search-input" placeholder="Введите Game ID..." autocomplete="off">
                 <button class="action-btn" onclick="searchUserById()">Найти</button>
             </div>
             <div id="search-result-container"></div>
@@ -630,6 +630,9 @@
 
 
     <script>
+        // Ссылка на твое облачное API на Render
+        const API_URL = "https://lilitgame.onrender.com";
+
         function switchScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -637,27 +640,25 @@
             document.getElementById(screenId).classList.add('active');
         }
 
-        let userGameId = "";
-        
-        let mockUsersDB = [
-            { id: "0042", name: "Кирилл", avatar: "🤖" },
-            { id: "7777", name: "Victoria_Queen", avatar: "👑" },
-            { id: "1337", name: "CyberDemon", avatar: "🔥" }
-        ];
+        let currentUserData = {
+            tg_id: "",
+            game_id: "",
+            name: "Игрок",
+            username: "",
+            score: 0
+        };
 
         let myFriends = [];
-        let incomingRequests = [
-            { id: "7777", name: "Victoria_Queen", avatar: "👑" }
-        ];
+        let incomingRequests = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            let tgUser = null;
-
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-                tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+            let tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.ready();
+                tg.expand();
             }
+
+            let tgUser = tg?.initDataUnsafe?.user;
 
             if (!tgUser || !tgUser.first_name) {
                 tgUser = {
@@ -668,23 +669,20 @@
                 };
             }
 
-            if (tgUser.id === 6912925240) {
-                userGameId = "0001";
-            } else {
-                const numericId = tgUser.id || 1000;
-                userGameId = String((numericId % 9000) + 1000);
-            }
+            const numericId = tgUser.id || 1000;
+            const generatedGameId = "ID-" + ((numericId % 9000) + 1000);
+            
+            currentUserData.tg_id = String(numericId);
+            currentUserData.game_id = generatedGameId;
+            currentUserData.name = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
+            currentUserData.username = tgUser.username || "";
 
-            document.getElementById('tg-game-id').textContent = `ID: #${userGameId}`;
-
-            if (tgUser.first_name) {
-                const fullName = tgUser.last_name ? `${tgUser.first_name} ${tgUser.last_name}` : tgUser.first_name;
-                document.getElementById('tg-name').textContent = fullName;
-            }
+            document.getElementById('tg-game-id').textContent = generatedGameId;
+            document.getElementById('tg-name').textContent = currentUserData.name;
             
             const usernameEl = document.getElementById('tg-username');
-            if (tgUser.username && tgUser.username.trim() !== "") {
-                usernameEl.textContent = `@${tgUser.username}`;
+            if (currentUserData.username.trim() !== "") {
+                usernameEl.textContent = `@${currentUserData.username}`;
                 usernameEl.style.display = 'block';
             } else {
                 usernameEl.style.display = 'none';
@@ -697,12 +695,32 @@
                 document.getElementById('tg-avatar-placeholder').style.display = 'none';
             }
 
-            updateFriendsUI();
+            // Авторизация на бэкенде при старте
+            initUserOnBackend();
         });
 
+        // Запрос авторизации / сохранения пользователя на сервере
+        async function initUserOnBackend() {
+            try {
+                const response = await fetch(`${API_URL}/api/auth?tg_id=${currentUserData.tg_id}&game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}&username=${encodeURIComponent(currentUserData.username)}`, {
+                    method: "POST"
+                });
+                const data = await response.json();
+                console.log("Синхронизация с бэкендом успешна:", data);
+                
+                if (data.score !== undefined) {
+                    currentUserData.score = data.score;
+                    document.querySelector('.balance-value').textContent = data.score;
+                    document.getElementById('header-balance').textContent = data.score;
+                }
+            } catch (error) {
+                console.error("Ошибка связи с сервером:", error);
+            }
+        }
+
         function copyGameId() {
-            if (!userGameId) return;
-            navigator.clipboard.writeText(`#${userGameId}`).then(() => {
+            if (!currentUserData.game_id) return;
+            navigator.clipboard.writeText(currentUserData.game_id).then(() => {
                 const badge = document.getElementById('tg-game-id');
                 const originalText = badge.textContent;
                 badge.textContent = "СКОПИРОВАНО!";
@@ -723,48 +741,67 @@
             tabElement.classList.add('active');
         }
 
-        function searchUserById() {
+        // Поиск реального игрока через бэкенд
+        async function searchUserById() {
             let query = document.getElementById('search-id-input').value.trim();
-            query = query.replace('#', '');
             const container = document.getElementById('search-result-container');
 
-            if (!query || query.length < 4) {
-                container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Введите корректный 4-значный ID</div>`;
+            if (!query) {
+                container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Введите Game ID</div>`;
                 return;
             }
 
-            if (query === userGameId) {
+            if (query === currentUserData.game_id) {
                 container.innerHTML = `<div class="empty-text">Это ваш собственный ID!</div>`;
                 return;
             }
 
-            let foundUser = mockUsersDB.find(u => u.id === query);
+            try {
+                const response = await fetch(`${API_URL}/api/users/search?game_id=${encodeURIComponent(query)}`);
+                if (!response.ok) {
+                    container.innerHTML = `<div class="empty-text">Игрок с ID ${query} не найден</div>`;
+                    return;
+                }
+                const foundUser = await response.json();
 
-            if (foundUser) {
                 container.innerHTML = `
                     <div class="friend-card" style="margin-top: 15px;">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${foundUser.avatar}</div>
+                            <div class="friend-avatar">${foundUser.avatar || '💀'}</div>
                             <div>
                                 <div class="friend-name">${foundUser.name}</div>
-                                <div class="friend-id">ID: #${foundUser.id}</div>
+                                <div class="friend-id">ID: ${foundUser.id}</div>
                             </div>
                         </div>
                         <button class="mini-btn" onclick="sendFriendRequest('${foundUser.id}')" id="req-btn-${foundUser.id}">Добавить</button>
                     </div>
                 `;
-            } else {
-                container.innerHTML = `<div class="empty-text">Игрок с ID #${query} не найден</div>`;
+            } catch (error) {
+                console.error("Ошибка поиска:", error);
+                container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Ошибка соединения с сервером</div>`;
             }
         }
 
-        function sendFriendRequest(targetId) {
-            const btn = document.getElementById(`req-btn-${targetId}`);
-            btn.textContent = "ЗАПРОС ОТПРАВЛЕН";
-            btn.style.color = "#8c8c99";
-            btn.style.borderColor = "rgba(140, 140, 153, 0.4)";
-            btn.style.background = "transparent";
-            btn.disabled = true;
+        // Отправка заявки в друзья через бэкенд
+        async function sendFriendRequest(targetGameId) {
+            try {
+                const response = await fetch(`${API_URL}/api/friends/request?user_game_id=${currentUserData.game_id}&target_game_id=${targetGameId}`, {
+                    method: "POST"
+                });
+                const res = await response.json();
+                
+                const btn = document.getElementById(`req-btn-${targetGameId}`);
+                if (btn) {
+                    btn.textContent = "ОТПРАВЛЕНО";
+                    btn.style.color = "#8c8c99";
+                    btn.style.borderColor = "rgba(140, 140, 153, 0.4)";
+                    btn.style.background = "transparent";
+                    btn.disabled = true;
+                }
+            } catch (error) {
+                console.error("Ошибка отправки заявки:", error);
+                alert("Не удалось отправить заявку");
+            }
         }
 
         function acceptRequest(targetId) {
@@ -789,10 +826,10 @@
                 friendsContainer.innerHTML = myFriends.map(f => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${f.avatar}</div>
+                            <div class="friend-avatar">${f.avatar || '💀'}</div>
                             <div>
                                 <div class="friend-name">${f.name}</div>
-                                <div class="friend-id">ID: #${f.id}</div>
+                                <div class="friend-id">ID: ${f.id}</div>
                             </div>
                         </div>
                         <button class="mini-btn mini-btn-danger" onclick="removeFriend('${f.id}')">Удалить</button>
@@ -807,10 +844,10 @@
                 reqContainer.innerHTML = incomingRequests.map(r => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${r.avatar}</div>
+                            <div class="friend-avatar">${r.avatar || '💀'}</div>
                             <div>
                                 <div class="friend-name">${r.name}</div>
-                                <div class="friend-id">ID: #${r.id}</div>
+                                <div class="friend-id">ID: ${r.id}</div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 6px;">
