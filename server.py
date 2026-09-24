@@ -32,35 +32,41 @@ def init_db():
     if not DATABASE_URL:
         print("DATABASE_URL не задана!")
         return
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            tg_id TEXT PRIMARY KEY,
-            game_id TEXT UNIQUE,
-            name TEXT,
-            username TEXT,
-            score INTEGER DEFAULT 100,
-            avatar TEXT DEFAULT '💀'
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS friends (
-            id SERIAL PRIMARY KEY,
-            user_game_id TEXT,
-            friend_game_id TEXT,
-            status TEXT,
-            UNIQUE(user_game_id, friend_game_id)
-        )
-    ''')
-    conn.commit()
-    cursor.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                tg_id TEXT PRIMARY KEY,
+                game_id TEXT UNIQUE,
+                name TEXT,
+                username TEXT,
+                score INTEGER DEFAULT 100,
+                avatar TEXT DEFAULT '💀'
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS friends (
+                id SERIAL PRIMARY KEY,
+                user_game_id TEXT,
+                friend_game_id TEXT,
+                status TEXT,
+                UNIQUE(user_game_id, friend_game_id)
+            )
+        ''')
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Таблицы успешно созданы/проверены в базе данных.")
+    except Exception as e:
+        print(f"Ошибка при инициализации БД: {e}")
 
+# Создаем таблицы при запуске приложения
 init_db()
 
 @app.post("/api/auth")
 def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
+    init_db()
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT score FROM users WHERE tg_id = %s", (tg_id,))
@@ -82,6 +88,7 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
 
 @app.get("/api/users/search")
 def search_user(game_id: str):
+    init_db()
     clean_id = game_id.strip()
     digits_only = clean_id.upper().replace("ID-", "").replace("ID", "").strip()
     
@@ -106,13 +113,13 @@ def search_user(game_id: str):
 
 @app.post("/api/friends/request")
 def send_request(user_game_id: str, target_game_id: str):
+    init_db()
     if user_game_id == target_game_id:
         return {"status": "self"}
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Проверяем, не существует ли уже связи в любом направлении
     cursor.execute(
         """
         SELECT status FROM friends 
@@ -138,6 +145,7 @@ def send_request(user_game_id: str, target_game_id: str):
 
 @app.get("/api/friends/requests")
 def get_requests(game_id: str):
+    init_db()
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
@@ -154,9 +162,9 @@ def get_requests(game_id: str):
 
 @app.get("/api/friends/list")
 def get_friends(game_id: str):
+    init_db()
     conn = get_db_connection()
     cursor = conn.cursor()
-    # Надежный выбор друзей независимо от того, кто кого добавлял
     cursor.execute('''
         SELECT DISTINCT U.game_id, U.name, U.avatar 
         FROM friends F 
@@ -173,9 +181,9 @@ def get_friends(game_id: str):
 
 @app.post("/api/friends/accept")
 def accept_request(user_game_id: str, target_game_id: str):
+    init_db()
     conn = get_db_connection()
     cursor = conn.cursor()
-    # Меняем статус на accepted для входящей заявки
     cursor.execute(
         "UPDATE friends SET status = 'accepted' WHERE user_game_id = %s AND friend_game_id = %s AND status = 'pending'",
         (target_game_id, user_game_id)
@@ -187,6 +195,7 @@ def accept_request(user_game_id: str, target_game_id: str):
 
 @app.post("/api/friends/remove")
 def remove_friend(user_game_id: str, target_game_id: str):
+    init_db()
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
