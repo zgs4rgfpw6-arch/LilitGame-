@@ -661,7 +661,14 @@
             }
 
             const numericId = tgUser.id || 1000;
-            const generatedGameId = "ID-" + ((numericId % 9000) + 1000);
+            
+            // Жестко закрепляем ID-0001 за вашим аккаунтом создателя
+            let generatedGameId;
+            if (Number(numericId) === 6912925240) {
+                generatedGameId = "ID-0001";
+            } else {
+                generatedGameId = "ID-" + ((numericId % 9000) + 1000);
+            }
             
             currentUserData.tg_id = String(numericId);
             currentUserData.game_id = generatedGameId;
