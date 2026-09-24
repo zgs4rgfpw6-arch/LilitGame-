@@ -495,7 +495,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="switchScreen('screen-friends'); loadFriendRequests();">
+            <div class="menu-card" onclick="switchScreen('screen-friends'); loadAllData();">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">ДРУЗЬЯ</span>
@@ -702,8 +702,8 @@
                     document.getElementById('header-balance').textContent = data.score;
                 }
                 
-                // Сразу подтягиваем входящие запросы при старте
-                loadFriendRequests();
+                // Подтягиваем данные друзей при старте
+                loadAllData();
             } catch (error) {
                 console.error("Ошибка связи с сервером:", error);
             }
@@ -802,12 +802,29 @@
             if (!currentUserData.game_id) return;
             try {
                 const response = await fetch(`${API_URL}/api/friends/requests?game_id=${currentUserData.game_id}`);
-                const data = await response.json();
-                incomingRequests = data;
+                incomingRequests = await response.json();
                 updateFriendsUI();
             } catch (error) {
                 console.error("Ошибка загрузки запросов:", error);
             }
+        }
+
+        // Загрузка подтвержденного списка друзей с бэкенда
+        async function loadFriendsList() {
+            if (!currentUserData.game_id) return;
+            try {
+                const response = await fetch(`${API_URL}/api/friends/list?game_id=${currentUserData.game_id}`);
+                myFriends = await response.json();
+                updateFriendsUI();
+            } catch (error) {
+                console.error("Ошибка загрузки списка друзей:", error);
+            }
+        }
+
+        // Комплексная загрузка (и список, и запросы)
+        function loadAllData() {
+            loadFriendsList();
+            loadFriendRequests();
         }
 
         function updateFriendsUI() {
@@ -854,24 +871,44 @@
             document.querySelectorAll('.friend-tab')[2].textContent = `Запросы (${incomingRequests.length})`;
         }
 
-        function acceptRequest(targetId) {
-            // Здесь в дальнейшем можно добавить вызов метода принятия дружбы на сервере
-            let reqIndex = incomingRequests.findIndex(r => r.id === targetId);
-            if (reqIndex !== -1) {
-                let friend = incomingRequests.splice(reqIndex, 1)[0];
-                myFriends.push(friend);
-                updateFriendsUI();
+        async function acceptRequest(targetId) {
+            try {
+                const response = await fetch(`${API_URL}/api/friends/accept?user_game_id=${currentUserData.game_id}&target_game_id=${targetId}`, {
+                    method: "POST"
+                });
+                if (response.ok) {
+                    loadAllData(); // Перезагружаем списки с сервера
+                }
+            } catch (error) {
+                console.error("Ошибка при принятии заявки:", error);
+                alert("Не удалось принять запрос");
             }
         }
 
-        function rejectRequest(targetId) {
-            incomingRequests = incomingRequests.filter(r => r.id !== targetId);
-            updateFriendsUI();
+        async function rejectRequest(targetId) {
+            try {
+                const response = await fetch(`${API_URL}/api/friends/remove?user_game_id=${currentUserData.game_id}&target_game_id=${targetId}`, {
+                    method: "POST"
+                });
+                if (response.ok) {
+                    loadAllData();
+                }
+            } catch (error) {
+                console.error("Ошибка при отклонении запроса:", error);
+            }
         }
 
-        function removeFriend(friendId) {
-            myFriends = myFriends.filter(f => f.id !== friendId);
-            updateFriendsUI();
+        async function removeFriend(friendId) {
+            try {
+                const response = await fetch(`${API_URL}/api/friends/remove?user_game_id=${currentUserData.game_id}&target_game_id=${friendId}`, {
+                    method: "POST"
+                });
+                if (response.ok) {
+                    loadAllData();
+                }
+            } catch (error) {
+                console.error("Ошибка при удалении друга:", error);
+            }
         }
     </script>
 </body>
