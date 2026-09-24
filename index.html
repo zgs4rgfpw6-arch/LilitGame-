@@ -255,6 +255,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: none;
         }
 
         .profile-avatar-placeholder {
@@ -568,7 +569,7 @@
 
         <div class="profile-user-card">
             <div class="profile-avatar-wrapper">
-                <img id="tg-avatar" src="" alt="Avatar" class="profile-avatar-img" style="display: none;">
+                <img id="tg-avatar" src="" alt="Avatar" class="profile-avatar-img">
                 <div id="tg-avatar-placeholder" class="profile-avatar-placeholder">💀</div>
             </div>
             <div class="profile-info">
@@ -699,13 +700,6 @@
                 usernameEl.style.display = 'none';
             }
 
-            if (tgUser.photo_url) {
-                const avatarImg = document.getElementById('tg-avatar');
-                avatarImg.src = tgUser.photo_url;
-                avatarImg.style.display = 'block';
-                document.getElementById('tg-avatar-placeholder').style.display = 'none';
-            }
-
             initUserOnBackend();
         });
 
@@ -720,6 +714,17 @@
                     currentUserData.score = data.score;
                     document.querySelector('.balance-value').textContent = data.score;
                     document.getElementById('header-balance').textContent = data.score;
+                }
+
+                // Запрос аватарки через бэкенд с использованием BOT_TOKEN
+                const avatarRes = await fetch(`${API_URL}/api/user/avatar?tg_id=${currentUserData.tg_id}`);
+                const avatarData = await avatarRes.json();
+                
+                if (avatarData.avatar_url) {
+                    const avatarImg = document.getElementById('tg-avatar');
+                    avatarImg.src = avatarData.avatar_url;
+                    avatarImg.style.display = 'block';
+                    document.getElementById('tg-avatar-placeholder').style.display = 'none';
                 }
                 
                 loadAllData();
