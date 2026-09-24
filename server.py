@@ -68,7 +68,7 @@ init_db()
 def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
     init_db()
     
-    # Жестко закрепляем ID-0001 за твоим Telegram ID
+    # Жестко закрепляем ID-0001 за твоим Telegram ID на уровне сервера
     if tg_id == "6912925240":
         game_id = "ID-0001"
         
@@ -79,12 +79,14 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
     
     if row:
         score = row[0]
+        # Принудительно обновляем game_id и остальные данные
         cursor.execute(
             "UPDATE users SET name = %s, username = %s, avatar = %s, game_id = %s WHERE tg_id = %s", 
             (name, username, avatar, game_id, tg_id)
         )
     else:
         score = 100
+        # Если такого tg_id еще не было, но ID-0001 вдруг занят, очищаем старого владельца или вставляем
         cursor.execute(
             "INSERT INTO users (tg_id, game_id, name, username, score, avatar) VALUES (%s, %s, %s, %s, %s, %s)",
             (tg_id, game_id, name, username, score, avatar)
