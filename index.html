@@ -421,12 +421,6 @@
             overflow: hidden;
         }
 
-        .friend-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
         .friend-name {
             color: #ffffff;
             font-size: 0.95rem;
@@ -501,7 +495,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="switchScreen('screen-friends')">
+            <div class="menu-card" onclick="switchScreen('screen-friends'); loadFriendRequests();">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">ДРУЗЬЯ</span>
@@ -572,7 +566,6 @@
             <div style="width: 70px;"></div>
         </div>
 
-        <!-- Блок пользователя -->
         <div class="profile-user-card">
             <div class="profile-avatar-wrapper">
                 <img id="tg-avatar" src="" alt="Avatar" class="profile-avatar-img" style="display: none;">
@@ -597,17 +590,16 @@
             <div style="width: 70px;"></div>
         </div>
 
-        <!-- Вкладки друзей -->
         <div class="friends-tabs">
             <div class="friend-tab active" onclick="switchFriendTab('friends-list-tab', this)">Список (0)</div>
             <div class="friend-tab" onclick="switchFriendTab('friends-add-tab', this)">Поиск</div>
-            <div class="friend-tab" onclick="switchFriendTab('friends-req-tab', this)">Запросы (0)</div>
+            <div class="friend-tab" onclick="switchFriendTab('friends-req-tab', this); loadFriendRequests();">Запросы (0)</div>
         </div>
 
         <!-- 1. Список друзей -->
         <div id="friends-list-tab" class="friends-content-section active">
             <div id="friends-container">
-                <div class="empty-text">У вас пока нет друзей в списке. Найдите игрока по ID!</div>
+                <div class="empty-text">У вас пока нет друзей в списке.</div>
             </div>
         </div>
 
@@ -623,14 +615,13 @@
         <!-- 3. Входящие запросы -->
         <div id="friends-req-tab" class="friends-content-section">
             <div id="requests-container">
-                <div class="empty-text">Нет новых входящих запросов.</div>
+                <div class="empty-text">Загрузка запросов...</div>
             </div>
         </div>
     </div>
 
 
     <script>
-        // Ссылка на твое облачное API на Render
         const API_URL = "https://lilitgame.onrender.com";
 
         function switchScreen(screenId) {
@@ -695,24 +686,24 @@
                 document.getElementById('tg-avatar-placeholder').style.display = 'none';
             }
 
-            // Авторизация на бэкенде при старте
             initUserOnBackend();
         });
 
-        // Запрос авторизации / сохранения пользователя на сервере
         async function initUserOnBackend() {
             try {
                 const response = await fetch(`${API_URL}/api/auth?tg_id=${currentUserData.tg_id}&game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}&username=${encodeURIComponent(currentUserData.username)}`, {
                     method: "POST"
                 });
                 const data = await response.json();
-                console.log("Синхронизация с бэкендом успешна:", data);
                 
                 if (data.score !== undefined) {
                     currentUserData.score = data.score;
                     document.querySelector('.balance-value').textContent = data.score;
                     document.getElementById('header-balance').textContent = data.score;
                 }
+                
+                // Сразу подтягиваем входящие запросы при старте
+                loadFriendRequests();
             } catch (error) {
                 console.error("Ошибка связи с сервером:", error);
             }
@@ -741,7 +732,6 @@
             tabElement.classList.add('active');
         }
 
-        // Поиск реального игрока через бэкенд
         async function searchUserById() {
             let query = document.getElementById('search-id-input').value.trim();
             const container = document.getElementById('search-result-container');
@@ -751,7 +741,7 @@
                 return;
             }
 
-            if (query === currentUserData.game_id) {
+            if (query.toUpperCase() === currentUserData.game_id) {
                 container.innerHTML = `<div class="empty-text">Это ваш собственный ID!</div>`;
                 return;
             }
@@ -767,7 +757,7 @@
                 container.innerHTML = `
                     <div class="friend-card" style="margin-top: 15px;">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${foundUser.avatar || '💀'}</div>
+                            <div class="friend-avatar">${foundUser.avatar || '👤'}</div>
                             <div>
                                 <div class="friend-name">${foundUser.name}</div>
                                 <div class="friend-id">ID: ${foundUser.id}</div>
@@ -782,7 +772,6 @@
             }
         }
 
-        // Отправка заявки в друзья через бэкенд
         async function sendFriendRequest(targetGameId) {
             try {
                 const response = await fetch(`${API_URL}/api/friends/request?user_game_id=${currentUserData.game_id}&target_game_id=${targetGameId}`, {
@@ -792,7 +781,11 @@
                 
                 const btn = document.getElementById(`req-btn-${targetGameId}`);
                 if (btn) {
-                    btn.textContent = "ОТПРАВЛЕНО";
+                    if (res.status === "already_exists") {
+                        btn.textContent = "УЖЕ ОТПРАВЛЕНО";
+                    } else {
+                        btn.textContent = "ОТПРАВЛЕНО";
+                    }
                     btn.style.color = "#8c8c99";
                     btn.style.borderColor = "rgba(140, 140, 153, 0.4)";
                     btn.style.background = "transparent";
@@ -804,29 +797,28 @@
             }
         }
 
-        function acceptRequest(targetId) {
-            let reqIndex = incomingRequests.findIndex(r => r.id === targetId);
-            if (reqIndex !== -1) {
-                let friend = incomingRequests.splice(reqIndex, 1)[0];
-                myFriends.push(friend);
+        // Загрузка входящих запросов с бэкенда
+        async function loadFriendRequests() {
+            if (!currentUserData.game_id) return;
+            try {
+                const response = await fetch(`${API_URL}/api/friends/requests?game_id=${currentUserData.game_id}`);
+                const data = await response.json();
+                incomingRequests = data;
                 updateFriendsUI();
+            } catch (error) {
+                console.error("Ошибка загрузки запросов:", error);
             }
-        }
-
-        function rejectRequest(targetId) {
-            incomingRequests = incomingRequests.filter(r => r.id !== targetId);
-            updateFriendsUI();
         }
 
         function updateFriendsUI() {
             const friendsContainer = document.getElementById('friends-container');
             if (myFriends.length === 0) {
-                friendsContainer.innerHTML = `<div class="empty-text">У вас пока нет друзей в списке. Найдите игрока по ID!</div>`;
+                friendsContainer.innerHTML = `<div class="empty-text">У вас пока нет друзей в списке.</div>`;
             } else {
                 friendsContainer.innerHTML = myFriends.map(f => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${f.avatar || '💀'}</div>
+                            <div class="friend-avatar">${f.avatar || '👤'}</div>
                             <div>
                                 <div class="friend-name">${f.name}</div>
                                 <div class="friend-id">ID: ${f.id}</div>
@@ -844,7 +836,7 @@
                 reqContainer.innerHTML = incomingRequests.map(r => `
                     <div class="friend-card">
                         <div class="friend-card-info">
-                            <div class="friend-avatar">${r.avatar || '💀'}</div>
+                            <div class="friend-avatar">${r.avatar || '👤'}</div>
                             <div>
                                 <div class="friend-name">${r.name}</div>
                                 <div class="friend-id">ID: ${r.id}</div>
@@ -860,6 +852,21 @@
 
             document.querySelectorAll('.friend-tab')[0].textContent = `Список (${myFriends.length})`;
             document.querySelectorAll('.friend-tab')[2].textContent = `Запросы (${incomingRequests.length})`;
+        }
+
+        function acceptRequest(targetId) {
+            // Здесь в дальнейшем можно добавить вызов метода принятия дружбы на сервере
+            let reqIndex = incomingRequests.findIndex(r => r.id === targetId);
+            if (reqIndex !== -1) {
+                let friend = incomingRequests.splice(reqIndex, 1)[0];
+                myFriends.push(friend);
+                updateFriendsUI();
+            }
+        }
+
+        function rejectRequest(targetId) {
+            incomingRequests = incomingRequests.filter(r => r.id !== targetId);
+            updateFriendsUI();
         }
 
         function removeFriend(friendId) {
