@@ -66,10 +66,7 @@ def search_user(game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Приводим к верхнему регистру и убираем лишние пробелы
     search_query = game_id.strip().upper()
-    
-    # Если ввели только цифры (например, "8240"), автоматически добавляем префикс "ID-"
     if search_query.isdigit():
         search_query = f"ID-{search_query}"
         
@@ -85,17 +82,46 @@ def search_user(game_id: str):
 def send_request(user_game_id: str, target_game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+    
+    # Проверяем, не отправляли ли уже запрос ранее
+    cursor.execute("""
+        SELECT id, status FROM friendships 
+        WHERE (user_game_id = ? AND friend_game_id = ?) 
+           OR (user_game_id = ? AND friend_game_id = ?)
+    """, (user_game_id, target_game_id, target_game_id, user_game_id))
+    existing = cursor.fetchone()
+    
+    if existing:
+        conn.close()
+        return {"status": "already_exists"}
+
     cursor.execute("INSERT INTO friendships (user_game_id, friend_game_id, status) VALUES (?, ?, 'pending')", 
                    (user_game_id, target_game_id))
     conn.commit()
     conn.close()
     return {"status": "success"}
 
+@app.get("/api/friends/requests")
+def get_friend_requests(game_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT f.id, u.game_id, u.name 
+        FROM friendships f
+        JOIN users u ON f.user_game_id = u.game_id
+        WHERE f.friend_game_id = ? AND f.status = 'pending'
+    """, (game_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    requests_list = [{"id": row[1], "name": row[2], "avatar": "👤"} for row in rows]
+    return requests_list
+
 @app.get("/api/friends/list")
 def get_friends(game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT user_game_id, friend_game_id, status FROM friendships WHERE user_game_id = ? OR friend_game_id = ?", (game_id, game_id))
+    cursor.execute("SELECT user_game_id, friend_game_id, status FROM friendships WHERE (user_game_id = ? OR friend_game_id = ?) AND status = 'accepted'", (game_id, game_id))
     rows = cursor.fetchall()
     conn.close()
     return rows
