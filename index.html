@@ -469,6 +469,111 @@
             font-size: 0.9rem;
             margin-top: 30px;
         }
+
+        /* Стили для Блэкджека */
+        .game-screen-bj {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .bj-table-section {
+            background: #111116;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 16px;
+            padding: 14px;
+            width: 100%;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
+        }
+
+        .bj-table-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #00d2ff;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 6px;
+            min-height: 100px;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            overflow-x: auto;
+        }
+
+        .bj-card {
+            width: 65px;
+            height: 92px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+            will-change: transform;
+            transform: translateZ(0);
+            animation: cardAppear 0.3s ease-out forwards;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-15px) scale(0.9) translateZ(0);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1) translateZ(0);
+            }
+        }
+
+        .game-message {
+            text-align: center;
+            color: #ff2a75;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin: 10px 0;
+            min-height: 24px;
+            text-shadow: 0 0 8px rgba(255, 42, 117, 0.4);
+        }
+
+        .bj-controls {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .neon-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #00ffaa, #00d2ff);
+            color: #000000;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-family: 'Lexend', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 0 12px rgba(0, 255, 170, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .neon-btn:active {
+            transform: scale(0.95);
+        }
+
+        .neon-btn:disabled {
+            background: #1a1a24;
+            color: #555566;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -538,7 +643,7 @@
         </div>
 
         <div class="menu-container" style="margin-top: 20px;">
-            <div class="menu-card" onclick="alert('Запуск игры: Дурак')">
+            <div class="menu-card" onclick="alert('Скоро: Дурак')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
                     <span class="card-title">ДУРАК</span>
@@ -546,7 +651,7 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Запуск игры: Blackjack')">
+            <div class="menu-card" onclick="switchScreen('screen-blackjack')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">BLACKJACK</span>
@@ -554,12 +659,52 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="alert('Запуск игры: Рулетка')">
+            <div class="menu-card" onclick="alert('Скоро: Рулетка')">
                 <div class="menu-card-content">
                     <span class="card-icon-mint">♥</span>
                     <span class="card-title">РУЛЕТКА</span>
                 </div>
                 <span class="arrow-icon">→</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ЭКРАН БЛЭКДЖЕКА -->
+    <div id="screen-blackjack" class="screen">
+        <div class="header-top">
+            <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
+            <h2 class="section-title" style="font-size: 1.1rem;">Blackjack</h2>
+            <div style="width: 70px;"></div>
+        </div>
+
+        <div class="game-screen-bj">
+            <!-- Зона дилера -->
+            <div class="bj-table-section">
+                <div class="bj-table-header">
+                    <span>ДИЛЕР</span>
+                    <span>Очки: <span id="dealer-score">—</span></span>
+                </div>
+                <div id="dealer-cards" class="card-container"></div>
+            </div>
+
+            <!-- Сообщение -->
+            <div id="bj-message" class="game-message">Сделайте ставку и раздайте карты</div>
+
+            <!-- Зона игрока -->
+            <div class="bj-table-section">
+                <div class="bj-table-header">
+                    <span>ИГРОК</span>
+                    <span>Очки: <span id="player-score">0</span></span>
+                </div>
+                <div id="player-cards" class="card-container"></div>
+            </div>
+
+            <!-- Кнопки -->
+            <div class="bj-controls">
+                <button id="btn-deal" class="neon-btn" onclick="startBlackjack()">Раздать</button>
+                <button id="btn-hit" class="neon-btn" onclick="playerHit()" disabled>Ещё</button>
+                <button id="btn-stand" class="neon-btn" onclick="playerStand()" disabled>Хватит</button>
             </div>
         </div>
     </div>
@@ -587,7 +732,6 @@
             </div>
         </div>
 
-        <!-- Кнопка ежедневного бонуса -->
         <div class="menu-container">
             <div class="menu-card" id="daily-bonus-card" onclick="claimDailyBonus()">
                 <div class="menu-card-content">
@@ -617,14 +761,12 @@
             <div class="friend-tab" onclick="switchFriendTab('friends-req-tab', this); loadFriendRequests();">Запросы (0)</div>
         </div>
 
-        <!-- 1. Список друзей -->
         <div id="friends-list-tab" class="friends-content-section active">
             <div id="friends-container">
                 <div class="empty-text">У вас пока нет друзей в списке.</div>
             </div>
         </div>
 
-        <!-- 2. Поиск и добавление -->
         <div id="friends-add-tab" class="friends-content-section">
             <div class="search-box">
                 <input type="text" id="search-id-input" class="search-input" placeholder="Введите Game ID..." autocomplete="off">
@@ -633,7 +775,6 @@
             <div id="search-result-container"></div>
         </div>
 
-        <!-- 3. Входящие запросы -->
         <div id="friends-req-tab" class="friends-content-section">
             <div id="requests-container">
                 <div class="empty-text">Загрузка запросов...</div>
@@ -722,7 +863,6 @@
                     document.getElementById('header-balance').textContent = data.score;
                 }
 
-                // Запрос аватарки через бэкенд с использованием BOT_TOKEN
                 const avatarRes = await fetch(`${API_URL}/api/user/avatar?tg_id=${currentUserData.tg_id}`);
                 const avatarData = await avatarRes.json();
                 
@@ -973,5 +1113,8 @@
             }
         }
     </script>
+
+    <!-- Подключение файла с логикой Блэкджека -->
+    <script src="blackjack.js"></script>
 </body>
 </html>
