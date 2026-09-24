@@ -65,9 +65,18 @@ def auth_user(tg_id: str, game_id: str, name: str, username: str = ""):
 def search_user(game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT game_id, name FROM users WHERE game_id = ?", (game_id,))
+    
+    # Приводим к верхнему регистру и убираем лишние пробелы
+    search_query = game_id.strip().upper()
+    
+    # Если ввели только цифры (например, "8240"), автоматически добавляем префикс "ID-"
+    if search_query.isdigit():
+        search_query = f"ID-{search_query}"
+        
+    cursor.execute("SELECT game_id, name FROM users WHERE game_id = ?", (search_query,))
     user = cursor.fetchone()
     conn.close()
+    
     if not user:
         raise HTTPException(status_code=404, detail="Игрок не найден")
     return {"id": user[0], "name": user[1], "avatar": "👤"}
