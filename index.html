@@ -233,7 +233,7 @@
             align-items: center;
             gap: 16px;
             max-width: 400px;
-            margin: 20px auto 0 auto;
+            margin: 20px auto;
             box-shadow: 0 0 15px rgba(255, 42, 117, 0.1);
         }
 
@@ -487,18 +487,6 @@
         </div>
 
         <div class="menu-container">
-            <!-- Кнопка ежедневного бонуса -->
-            <div class="menu-card" id="daily-bonus-card" onclick="claimDailyBonus()">
-                <div class="menu-card-content">
-                    <span class="card-icon-mint">🎁</span>
-                    <div>
-                        <div class="card-title">БОНУС</div>
-                        <div style="font-size: 0.75rem; color: #50e3c2; margin-top: 2px;">+3 000 фишек</div>
-                    </div>
-                </div>
-                <span style="font-size: 0.85rem; color: #50e3c2; font-weight: 600;" id="bonus-status-text">ЗАБРАТЬ</span>
-            </div>
-
             <div class="menu-card" onclick="switchScreen('screen-games')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
@@ -591,6 +579,20 @@
                 </div>
             </div>
         </div>
+
+        <!-- Кнопка ежедневного бонуса теперь в профиле -->
+        <div class="menu-container">
+            <div class="menu-card" id="daily-bonus-card" onclick="claimDailyBonus()">
+                <div class="menu-card-content">
+                    <span class="card-icon-mint">🎁</span>
+                    <div>
+                        <div class="card-title">БОНУС</div>
+                        <div style="font-size: 0.75rem; color: #50e3c2; margin-top: 2px;">+3 000 фишек</div>
+                    </div>
+                </div>
+                <span style="font-size: 0.85rem; color: #50e3c2; font-weight: 600;" id="bonus-status-text">ЗАБРАТЬ</span>
+            </div>
+        </div>
     </div>
 
 
@@ -674,7 +676,6 @@
 
             const numericId = tgUser.id || 1000;
             
-            // Жестко закрепляем ID-0001 за вашим аккаунтом создателя
             let generatedGameId;
             if (Number(numericId) === 6912925240) {
                 generatedGameId = "ID-0001";
