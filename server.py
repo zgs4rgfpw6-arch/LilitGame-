@@ -83,7 +83,6 @@ def send_request(user_game_id: str, target_game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Проверяем, не отправляли ли уже запрос ранее
     cursor.execute("""
         SELECT id, status FROM friendships 
         WHERE (user_game_id = ? AND friend_game_id = ?) 
@@ -117,11 +116,55 @@ def get_friend_requests(game_id: str):
     requests_list = [{"id": row[1], "name": row[2], "avatar": "👤"} for row in rows]
     return requests_list
 
+@app.post("/api/friends/accept")
+def accept_friend_request(user_game_id: str, target_game_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    # Меняем статус заявки с 'pending' на 'accepted' (запрос мог быть отправлен от target к user)
+    cursor.execute("""
+        UPDATE friendships 
+        SET status = 'accepted' 
+        WHERE (user_game_id = ? AND friend_game_id = ?) 
+           OR (user_game_id = ? AND friend_game_id = ?)
+    """, (target_game_id, user_game_id, user_game_id, target_game_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.post("/api/friends/remove")
+def remove_friend(user_game_id: str, target_game_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    # Удаляем запись о дружбе или отклоненном запросе между двумя игроками
+    cursor.execute("""
+        DELETE FROM friendships 
+        WHERE (user_game_id = ? AND friend_game_id = ?) 
+           OR (user_game_id = ? AND friend_game_id = ?)
+    """, (user_game_id, target_game_id, target_game_id, user_game_id))
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
 @app.get("/api/friends/list")
 def get_friends(game_id: str):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT user_game_id, friend_game_id, status FROM friendships WHERE (user_game_id = ? OR friend_game_id = ?) AND status = 'accepted'", (game_id, game_id))
+    # Находим все подтвержденные связи, где текущий пользователь — либо отправитель, либо получатель
+    cursor.execute("""
+        SELECT f.id, 
+               CASE WHEN f.user_game_id = ? THEN f.friend_game_id ELSE f.user_game_id END as friend_id
+        FROM friendships f
+        WHERE (f.user_game_id = ? OR f.friend_game_id = ?) AND f.status = 'accepted'
+    """, (game_id, game_id, game_id))
     rows = cursor.fetchall()
+    
+    friends_list = []
+    for row in rows:
+        f_id = row[1]
+        cursor.execute("SELECT game_id, name FROM users WHERE game_id = ?", (f_id,))
+        friend_user = cursor.fetchone()
+        if friend_user:
+            friends_list.append({"id": friend_user[0], "name": friend_user[1], "avatar": "👤"})
+            
     conn.close()
-    return rows
+    return friends_list
