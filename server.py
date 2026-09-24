@@ -61,13 +61,9 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
 @app.get("/api/users/search")
 def search_user(game_id: str):
     clean_id = game_id.strip()
-    # Поддерживаем поиск как по чистым цифрам (8240), так и с префиксом (ID-8240)
-    search_id_1 = clean_id
-    search_id_2 = f"ID-{clean_id}" if not clean_id.upper().startswith("ID-") else clean_id
-
     conn = sqlite3.connect("lilit.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = ? OR game_id = ?", (search_id_1, search_id_2))
+    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = ?", (clean_id,))
     row = cursor.fetchone()
     conn.close()
     
