@@ -14,7 +14,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Получаем DATABASE_URL из переменных окружения Render
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db_connection():
@@ -47,10 +46,11 @@ def init_db():
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS friends (
+            id SERIAL PRIMARY KEY,
             user_game_id TEXT,
             friend_game_id TEXT,
             status TEXT,
-            PRIMARY KEY (user_game_id, friend_game_id)
+            UNIQUE(user_game_id, friend_game_id)
         )
     ''')
     conn.commit()
@@ -83,9 +83,18 @@ def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "",
 @app.get("/api/users/search")
 def search_user(game_id: str):
     clean_id = game_id.strip()
+    digits_only = clean_id.upper().replace("ID-", "").replace("ID", "").strip()
+    
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT game_id, name, avatar FROM users WHERE game_id = %s", (clean_id,))
+    cursor.execute(
+        """
+        SELECT game_id, name, avatar 
+        FROM users 
+        WHERE game_id ILIKE %s OR game_id ILIKE %s OR game_id LIKE %s
+        """, 
+        (f"%{clean_id}%", f"%{digits_only}%", f"%{digits_only}")
+    )
     row = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -103,8 +112,13 @@ def send_request(user_game_id: str, target_game_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Проверяем, не существует ли уже связи в любом направлении
     cursor.execute(
-        "SELECT status FROM friends WHERE (user_game_id = %s AND friend_game_id = %s) OR (user_game_id = %s AND friend_game_id = %s)",
+        """
+        SELECT status FROM friends 
+        WHERE (user_game_id = %s AND friend_game_id = %s) 
+           OR (user_game_id = %s AND friend_game_id = %s)
+        """,
         (user_game_id, target_game_id, target_game_id, user_game_id)
     )
     existing = cursor.fetchone()
@@ -142,12 +156,15 @@ def get_requests(game_id: str):
 def get_friends(game_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Надежный выбор друзей независимо от того, кто кого добавлял
     cursor.execute('''
-        SELECT U.game_id, U.name, U.avatar 
+        SELECT DISTINCT U.game_id, U.name, U.avatar 
         FROM friends F 
-        JOIN users U ON (F.friend_game_id = U.game_id OR F.user_game_id = U.game_id)
-        WHERE (F.user_game_id = %s OR F.friend_game_id = %s) AND F.status = 'accepted' AND U.game_id != %s
-    ''', (game_id, game_id, game_id))
+        JOIN users U ON (U.game_id = CASE WHEN F.user_game_id = %s THEN F.friend_game_id ELSE F.user_game_id END)
+        WHERE (F.user_game_id = %s OR F.friend_game_id = %s) 
+          AND F.status = 'accepted' 
+          AND U.game_id != %s
+    ''', (game_id, game_id, game_id, game_id))
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -158,8 +175,9 @@ def get_friends(game_id: str):
 def accept_request(user_game_id: str, target_game_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Меняем статус на accepted для входящей заявки
     cursor.execute(
-        "UPDATE friends SET status = 'accepted' WHERE user_game_id = %s AND friend_game_id = %s",
+        "UPDATE friends SET status = 'accepted' WHERE user_game_id = %s AND friend_game_id = %s AND status = 'pending'",
         (target_game_id, user_game_id)
     )
     conn.commit()
