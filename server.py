@@ -17,7 +17,6 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-# Токен вашего бота (пропишите переменную BOT_TOKEN в настройках Render)
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
 def get_db_connection():
@@ -66,13 +65,36 @@ def init_db():
     except Exception as e:
         print(f"Ошибка при инициализации БД: {e}")
 
-# Создаем таблицы при запуске приложения
 init_db()
+
+def fetch_avatar_url(tg_id: str) -> str:
+    """Вспомогательная функция для получения ссылки на аватар из Telegram по tg_id"""
+    try:
+        if not BOT_TOKEN or not tg_id:
+            return None
+            
+        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUserProfilePhotos?user_id={tg_id}&limit=1"
+        response = requests.get(url).json()
+        
+        if response.get("ok") and response.get("result", {}).get("total_count", 0) > 0:
+            photos = response["result"]["photos"][0]
+            file_id = photos[-1]["file_id"]
+            
+            file_path_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+            file_response = requests.get(file_path_url).json()
+            
+            if file_response.get("ok"):
+                file_path = file_response["result"]["file_path"]
+                return f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+        
+        return None
+    except Exception as e:
+        print(f"Ошибка получения аватара для tg_id {tg_id}: {e}")
+        return None
 
 @app.post("/api/auth")
 def auth(tg_id: str, game_id: str, name: str = "Игрок", username: str = "", avatar: str = "💀"):
     init_db()
-    
     if tg_id == "6912925240":
         game_id = "ID-0001"
         
@@ -135,29 +157,8 @@ def claim_bonus(game_id: str):
 
 @app.get("/api/user/avatar")
 def get_telegram_avatar(tg_id: str):
-    try:
-        if not BOT_TOKEN:
-            return {"avatar_url": None}
-            
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/getUserProfilePhotos?user_id={tg_id}&limit=1"
-        response = requests.get(url).json()
-        
-        if response.get("ok") and response.get("result", {}).get("total_count", 0) > 0:
-            photos = response["result"]["photos"][0]
-            file_id = photos[-1]["file_id"]
-            
-            file_path_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
-            file_response = requests.get(file_path_url).json()
-            
-            if file_response.get("ok"):
-                file_path = file_response["result"]["file_path"]
-                download_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
-                return {"avatar_url": download_url}
-        
-        return {"avatar_url": None}
-    except Exception as e:
-        print(f"Ошибка получения аватара: {e}")
-        return {"avatar_url": None}
+    avatar_url = fetch_avatar_url(tg_id)
+    return {"avatar_url": avatar_url}
 
 
 @app.get("/api/users/search")
@@ -170,7 +171,7 @@ def search_user(game_id: str):
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT game_id, name, avatar 
+        SELECT tg_id, game_id, name 
         FROM users 
         WHERE game_id ILIKE %s OR game_id ILIKE %s OR game_id LIKE %s
         """, 
@@ -183,7 +184,10 @@ def search_user(game_id: str):
     if not row:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return {"id": row[0], "name": row[1], "avatar": row[2]}
+    tg_id, found_game_id, name = row
+    avatar_url = fetch_avatar_url(tg_id)
+    
+    return {"id": found_game_id, "name": name, "avatar": avatar_url}
 
 @app.post("/api/friends/request")
 def send_request(user_game_id: str, target_game_id: str):
@@ -223,7 +227,7 @@ def get_requests(game_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT U.game_id, U.name, U.avatar 
+        SELECT U.tg_id, U.game_id, U.name 
         FROM friends F 
         JOIN users U ON F.user_game_id = U.game_id 
         WHERE F.friend_game_id = %s AND F.status = 'pending'
@@ -232,7 +236,13 @@ def get_requests(game_id: str):
     cursor.close()
     conn.close()
     
-    return [{"id": r[0], "name": r[1], "avatar": r[2]} for r in rows]
+    result = []
+    for r in rows:
+        tg_id, g_id, name = r
+        avatar_url = fetch_avatar_url(tg_id)
+        result.append({"id": g_id, "name": name, "avatar": avatar_url})
+        
+    return result
 
 @app.get("/api/friends/list")
 def get_friends(game_id: str):
@@ -240,7 +250,7 @@ def get_friends(game_id: str):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT DISTINCT U.game_id, U.name, U.avatar 
+        SELECT DISTINCT U.tg_id, U.game_id, U.name 
         FROM friends F 
         JOIN users U ON (U.game_id = CASE WHEN F.user_game_id = %s THEN F.friend_game_id ELSE F.user_game_id END)
         WHERE (F.user_game_id = %s OR F.friend_game_id = %s) 
@@ -251,7 +261,13 @@ def get_friends(game_id: str):
     cursor.close()
     conn.close()
     
-    return [{"id": r[0], "name": r[1], "avatar": r[2]} for r in rows]
+    result = []
+    for r in rows:
+        tg_id, g_id, name = r
+        avatar_url = fetch_avatar_url(tg_id)
+        result.append({"id": g_id, "name": name, "avatar": avatar_url})
+        
+    return result
 
 @app.post("/api/friends/accept")
 def accept_request(user_game_id: str, target_game_id: str):
