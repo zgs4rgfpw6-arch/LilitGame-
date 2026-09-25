@@ -9,7 +9,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 16px;
-    width: 100vw;
+    width: 100%; /* Исправлено с 100vw на 100% */
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -25,7 +25,7 @@ body {
     flex-direction: column;
 }
 
-/* Главное меню и блоки на всю ширину (как на старом дизайне) */
+/* Главное меню и блоки на всю ширину */
 .menu-container, 
 #games-screen, 
 #profile-screen, 
@@ -100,6 +100,7 @@ body {
     align-items: center;
     width: 100%;
     margin-bottom: 5px;
+    position: relative; /* Добавлено для точного центрирования заголовка */
 }
 
 .bj-back-btn {
@@ -110,17 +111,21 @@ body {
     border-radius: 12px;
     font-size: 0.9rem;
     cursor: pointer;
+    z-index: 2; /* Чтобы кнопка была поверх, если заголовок по центру */
 }
 
 .bj-title {
-    flex: 1;
+    position: absolute; /* Центрируем заголовок независимо от ширины кнопки */
+    left: 0;
+    right: 0;
     text-align: center;
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 2px;
     color: #ffffff;
     text-shadow: 0 0 10px rgba(255, 42, 117, 0.6);
-    margin-right: 50px;
+    pointer-events: none; /* Чтобы клики проходили сквозь текст, если нужно */
+    margin: 0;
 }
 
 /* Игровые зоны дилера и игрока на всю ширину */
@@ -210,7 +215,7 @@ body {
     width: 110px;
     text-align: center;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 16px; /* Защита от автозума на iOS */
 }
 
 .bj-buttons-row {
