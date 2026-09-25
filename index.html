@@ -576,7 +576,7 @@
             cursor: not-allowed;
         }
 
-        /* Блок ставок (перенесен вниз) */
+        /* Блок ставок */
         .bj-bet-section {
             background: #111116;
             border: 1px solid rgba(255, 42, 117, 0.3);
@@ -860,31 +860,7 @@
         let myFriends = [];
         let incomingRequests = [];
 
-        // --- ЛОГИКА СТАВОК И БЛЭКДЖЕКА ---
-        let currentBet = 100;
-
-        function changeBet(amount) {
-            let newBet = currentBet + amount;
-            if (newBet > currentUserData.score) {
-                currentBet = currentUserData.score > 0 ? currentUserData.score : 0;
-            } else {
-                currentBet = newBet;
-            }
-            updateBetUI();
-        }
-
-        function resetBet() {
-            currentBet = currentUserData.score >= 100 ? 100 : (currentUserData.score > 0 ? currentUserData.score : 0);
-            updateBetUI();
-        }
-
-        function updateBetUI() {
-            const betElement = document.getElementById('current-bet');
-            if (betElement) {
-                betElement.textContent = currentBet;
-            }
-        }
-
+        // Функция обновления баланса на фронтенде и отправки на бэкенд
         async function updateScore(newScore) {
             currentUserData.score = newScore;
             
@@ -901,38 +877,6 @@
                 console.error("Ошибка обновления баланса на сервере:", error);
             }
         }
-
-        // Пример интеграции в раздачу (списание ставки)
-        function startBlackjack() {
-            if (currentBet <= 0) {
-                alert("Сделайте ставку!");
-                return;
-            }
-            if (currentUserData.score < currentBet) {
-                alert("Недостаточно фишек для ставки!");
-                return;
-            }
-
-            // Списываем ставку при старте раунда
-            let newScore = currentUserData.score - currentBet;
-            updateScore(newScore);
-
-            document.getElementById('bj-message').textContent = "Игра идет...";
-            document.getElementById('btn-deal').disabled = true;
-            document.getElementById('btn-hit').disabled = false;
-            document.getElementById('btn-stand').disabled = false;
-
-            // Здесь будет код генерации карт игрока и дилера...
-        }
-
-        function playerHit() {
-            // Логика взятия карты
-        }
-
-        function playerStand() {
-            // Логика остановки и подсчета очков дилера
-        }
-        // ----------------------------------
 
         document.addEventListener('DOMContentLoaded', () => {
             let tg = window.Telegram?.WebApp;
@@ -992,10 +936,13 @@
                     document.querySelectorAll('.balance-value').forEach(el => {
                         el.textContent = data.score;
                     });
-                    // Корректируем ставку, если она стала выше актуального баланса
-                    if (currentBet > data.score) {
-                        currentBet = data.score > 0 ? data.score : 0;
-                        updateBetUI();
+                    
+                    // Если в блэкджеке определена функция коррекции ставки — вызываем её
+                    if (typeof updateBetUI === 'function' && typeof currentBet !== 'undefined') {
+                        if (currentBet > data.score) {
+                            currentBet = data.score > 0 ? data.score : 0;
+                            updateBetUI();
+                        }
                     }
                 }
 
