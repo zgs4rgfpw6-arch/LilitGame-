@@ -1,0 +1,115 @@
+/* Основные стили экрана блекджека */
+body {
+    background-color: #0d0d0f;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.blackjack-container {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+}
+
+/* Заголовки и статус */
+h2 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+.dealer-section, .player-section {
+    width: 100%;
+    text-align: center;
+}
+
+.dealer-section p, .player-section p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #8a8a93;
+}
+
+/* Контейнеры для карт с эффектом веера */
+.cards-flex {
+    display: flex;
+    justify-content: center;
+    min-height: 110px;
+    position: relative;
+}
+
+/* Карточки */
+.bj-card {
+    width: 70px;
+    height: 102px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    margin-left: -25px; /* Эффект наложения карт друг на друга */
+    transition: transform 0.3s ease;
+    transform: translateZ(0); /* Аппаратное ускорение для плавности в iOS */
+}
+
+.bj-card:first-child {
+    margin-left: 0;
+}
+
+/* Информационное сообщение */
+.bj-message {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ff007f;
+    text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+    min-height: 24px;
+    text-align: center;
+}
+
+/* Панель управления (Кнопки) */
+.bj-controls {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.bj-controls button {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #1a1a24;
+    color: #00ffcc;
+    border: 1px solid #00ffcc;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+    transition: all 0.2s ease;
+}
+
+.bj-controls button:active:not(:disabled) {
+    transform: scale(0.96);
+    background: #00ffcc;
+    color: #0d0d0f;
+}
+
+.bj-controls button:disabled {
+    border-color: #33333d;
+    color: #555563;
+    background: #121217;
+    box-shadow: none;
+    cursor: not-allowed;
+}
