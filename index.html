@@ -860,11 +860,9 @@
         let myFriends = [];
         let incomingRequests = [];
 
-        // Функция обновления баланса на фронтенде и отправки на бэкенд (путь скорректирован под server.py)
         async function updateScore(newScore) {
             currentUserData.score = newScore;
             
-            // Обновляем во всех элементах баланса на странице
             document.querySelectorAll('.balance-value').forEach(el => {
                 el.textContent = newScore;
             });
@@ -1197,7 +1195,8 @@
         }
     </script>
 
-    <!-- Подключение файла с логикой Блэкджека -->
+    <!-- Подключение файлов с логикой игр -->
     <script src="blackjack.js"></script>
+    <script src="durak.js"></script>
 </body>
 </html>
