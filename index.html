@@ -829,6 +829,59 @@
     </div>
 
 
+    <!-- ЭКРАН ИГРЫ В ДУРАКА -->
+    <div id="screen-durak-game" class="screen">
+        <div class="header-top">
+            <button class="back-btn" onclick="leaveDurakGame()">← Выйти</button>
+            <h2 class="section-title" id="durak-room-title" style="font-size: 1.1rem;">Дурак</h2>
+            <div class="balance-badge" style="padding: 4px 10px;">
+                <span class="balance-plus" style="font-size: 0.85rem;">+</span>
+                <div class="balance-chip">
+                    <span style="font-size: 0.85rem;">💳</span>
+                    <span class="balance-value" style="font-size: 0.85rem;">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-screen-bj">
+            <!-- Зона противника -->
+            <div class="bj-table-section">
+                <div class="bj-table-header">
+                    <span id="durak-enemy-name">ПРОТИВНИК</span>
+                    <span>Карт: <span id="durak-enemy-count">0</span></span>
+                </div>
+                <div id="durak-enemy-cards" class="card-container"></div>
+            </div>
+
+            <!-- Игровой стол -->
+            <div id="durak-message" class="game-message">Ожидание начала игры...</div>
+            
+            <div class="bj-table-section" style="border-color: rgba(255, 42, 117, 0.4);">
+                <div class="bj-table-header">
+                    <span>СТОЛ / КОЗЫРЬ: <span id="durak-trump-card" style="color: #ff2a75;">—</span></span>
+                    <span>Колода: <span id="durak-deck-count">36</span></span>
+                </div>
+                <div id="durak-table-cards" class="card-container" style="min-height: 110px;"></div>
+            </div>
+
+            <!-- Зона игрока -->
+            <div class="bj-table-section">
+                <div class="bj-table-header">
+                    <span>ВАШИ КАРТЫ</span>
+                    <span>Козырь масть</span>
+                </div>
+                <div id="durak-player-cards" class="card-container"></div>
+            </div>
+
+            <!-- Кнопки управления в Дураке -->
+            <div class="bj-controls">
+                <button id="btn-durak-action" class="neon-btn" onclick="durakMainAction()" disabled>Бито / Возя</button>
+                <button id="btn-durak-take" class="neon-btn" style="background: linear-gradient(135deg, #ff0055, #ff2a75); color: #fff;" onclick="durakTakeCards()" disabled>Взять</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- ЭКРАН БЛЭКДЖЕКА -->
     <div id="screen-blackjack" class="screen">
         <div class="header-top">
@@ -1318,5 +1371,6 @@
     <!-- Подключение файлов с логикой игр -->
     <script src="blackjack.js"></script>
     <script src="durak.js"></script>
+    <script src="durak-client.js"></script>
 </body>
 </html>
