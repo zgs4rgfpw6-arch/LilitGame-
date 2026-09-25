@@ -829,55 +829,68 @@
     </div>
 
 
-    <!-- ЭКРАН ИГРЫ В ДУРАКА -->
+    <!-- ЭКРАН ИГРЫ В ДУРАКА (НОВЫЙ ВЕРТИКАЛЬНЫЙ ДИЗАЙН) -->
     <div id="screen-durak-game" class="screen">
-        <div class="header-top">
-            <button class="back-btn" onclick="leaveDurakGame()">← Выйти</button>
-            <h2 class="section-title" id="durak-room-title" style="font-size: 1.1rem;">Дурак</h2>
+        <div class="header-top" style="margin-bottom: 12px;">
+            <button class="back-btn" onclick="leaveDurakGame()">←</button>
+            
+            <!-- Инфо противника сверху (в центре) -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="durak-enemy-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #111116; border: 1px solid rgba(255, 42, 117, 0.4); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; overflow: hidden;">👤</div>
+                <div>
+                    <div id="durak-enemy-name" style="font-size: 0.8rem; font-weight: 600; color: #fff;">ПРОТИВНИК</div>
+                    <div style="font-size: 0.7rem; color: #8c8c99;" id="durak-enemy-count-text">Карт: <span id="durak-enemy-count">0</span></div>
+                </div>
+            </div>
+
             <div class="balance-badge" style="padding: 4px 10px;">
-                <span class="balance-plus" style="font-size: 0.85rem;">+</span>
                 <div class="balance-chip">
-                    <span style="font-size: 0.85rem;">💳</span>
-                    <span class="balance-value" style="font-size: 0.85rem;">0</span>
+                    <span style="font-size: 0.8rem;">💳</span>
+                    <span class="balance-value" style="font-size: 0.85rem;" id="durak-header-score">0</span>
                 </div>
             </div>
         </div>
 
-        <div class="game-screen-bj">
-            <!-- Зона противника -->
-            <div class="bj-table-section">
-                <div class="bj-table-header">
-                    <span id="durak-enemy-name">ПРОТИВНИК</span>
-                    <span>Карт: <span id="durak-enemy-count">0</span></span>
-                </div>
-                <div id="durak-enemy-cards" class="card-container"></div>
-            </div>
-
-            <!-- Игровой стол -->
-            <div id="durak-message" class="game-message">Ожидание начала игры...</div>
+        <div class="game-screen-bj" style="position: relative; min-height: calc(100vh - 130px); justify-content: space-between; padding: 0;">
             
-            <div class="bj-table-section" style="border-color: rgba(255, 42, 117, 0.4);">
-                <div class="bj-table-header">
-                    <span>СТОЛ / КОЗЫРЬ: <span id="durak-trump-card" style="color: #ff2a75;">—</span></span>
-                    <span>Колода: <span id="durak-deck-count">36</span></span>
-                </div>
-                <div id="durak-table-cards" class="card-container" style="min-height: 110px;"></div>
+            <!-- Левая колода карт / козырь -->
+            <div style="position: absolute; top: 5px; left: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <div id="durak-deck-count" style="font-size: 0.75rem; color: #8c8c99;">36</div>
+                <div id="durak-trump-card" style="width: 42px; height: 60px; background: #1a1a24; border: 1px solid rgba(255,42,117,0.3); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #ff2a75;">🃏</div>
             </div>
 
-            <!-- Зона игрока -->
-            <div class="bj-table-section">
-                <div class="bj-table-header">
-                    <span>ВАШИ КАРТЫ</span>
-                    <span>Козырь масть</span>
-                </div>
-                <div id="durak-player-cards" class="card-container"></div>
+            <!-- Зона карт противника (сверху) -->
+            <div id="durak-enemy-cards" class="card-container" style="min-height: 75px; transform: scale(0.8); transform-origin: top center; margin-bottom: -10px;"></div>
+
+            <!-- Игровой стол (центр) -->
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+                <div id="durak-message" class="game-message" style="font-size: 0.85rem; margin-bottom: 8px;">Ожидание начала игры...</div>
+                <div id="durak-table-cards" class="card-container" style="min-height: 90px; width: 100%; justify-content: center;"></div>
             </div>
 
-            <!-- Кнопки управления в Дураке -->
-            <div class="bj-controls">
-                <button id="btn-durak-action" class="neon-btn" onclick="durakMainAction()" disabled>Бито / Возя</button>
-                <button id="btn-durak-take" class="neon-btn" style="background: linear-gradient(135deg, #ff0055, #ff2a75); color: #fff;" onclick="durakTakeCards()" disabled>Взять</button>
+            <!-- Зона карт игрока и нижняя панель управления -->
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                <div id="durak-player-cards" class="card-container" style="min-height: 110px;"></div>
+
+                <!-- Нижняя панель: Кнопки действий слева, аватар/имя игрока справа -->
+                <div style="display: flex; align-items: center; gap: 10px; background: #111116; border: 1px solid rgba(255, 42, 117, 0.25); border-radius: 16px; padding: 10px 14px;">
+                    <div style="display: flex; gap: 6px; flex: 1;">
+                        <button id="btn-durak-action" class="neon-btn" onclick="durakMainAction()" style="padding: 10px 8px; border-radius: 10px; font-size: 0.8rem;" disabled>Готов</button>
+                        <button id="btn-durak-take" class="neon-btn" style="background: linear-gradient(135deg, #ff0055, #ff2a75); color: #fff; padding: 10px 8px; border-radius: 10px; font-size: 0.8rem;" onclick="durakTakeCards()" disabled>Взять</button>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="text-align: right;">
+                            <div id="durak-my-name" style="font-size: 0.75rem; font-weight: 600; color: #fff;">Вы</div>
+                            <div style="font-size: 0.7rem; color: #00d2ff;" id="durak-my-cards-count">Карт: 0</div>
+                        </div>
+                        <div id="durak-my-avatar-wrapper" style="width: 38px; height: 38px; border-radius: 50%; background: #0d0d12; border: 2px solid #00ffaa; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <span id="durak-my-avatar-placeholder" style="font-size: 1rem;">👤</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -1027,7 +1040,8 @@
             game_id: "",
             name: "Игрок",
             username: "",
-            score: 0
+            score: 0,
+            avatar_url: null
         };
 
         let myFriends = [];
@@ -1120,10 +1134,18 @@
                 const avatarData = await avatarRes.json();
                 
                 if (avatarData.avatar_url) {
+                    currentUserData.avatar_url = avatarData.avatar_url;
+                    
                     const avatarImg = document.getElementById('tg-avatar');
                     avatarImg.src = avatarData.avatar_url;
                     avatarImg.style.display = 'block';
                     document.getElementById('tg-avatar-placeholder').style.display = 'none';
+
+                    // Также дублируем аватар в нижнюю панель Дурака
+                    const durakWrapper = document.getElementById('durak-my-avatar-wrapper');
+                    if (durakWrapper) {
+                        durakWrapper.innerHTML = `<img src="${avatarData.avatar_url}" alt="" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
                 }
                 
                 loadAllData();
