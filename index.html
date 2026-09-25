@@ -503,8 +503,8 @@
 
         .card-container {
             display: flex;
-            gap: 6px;
-            min-height: 100px;
+            gap: 8px;
+            min-height: 125px;
             justify-content: center;
             align-items: center;
             perspective: 1000px;
@@ -512,11 +512,11 @@
         }
 
         .bj-card {
-            width: 65px;
-            height: 92px;
-            border-radius: 8px;
+            width: 85px;
+            height: 120px;
+            border-radius: 10px;
             object-fit: cover;
-            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+            box-shadow: 0 0 12px rgba(0, 255, 170, 0.35);
             will-change: transform;
             transform: translateZ(0);
             animation: cardAppear 0.3s ease-out forwards;
@@ -538,7 +538,7 @@
             color: #ff2a75;
             font-weight: 600;
             font-size: 0.95rem;
-            margin: 10px 0;
+            margin: 6px 0;
             min-height: 24px;
             text-shadow: 0 0 8px rgba(255, 42, 117, 0.4);
         }
@@ -576,14 +576,14 @@
             cursor: not-allowed;
         }
 
-        /* Дополнительные стили для ставок Blackjack */
+        /* Блок ставок (перенесен вниз) */
         .bj-bet-section {
             background: #111116;
             border: 1px solid rgba(255, 42, 117, 0.3);
             border-radius: 16px;
             padding: 12px 14px;
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
@@ -714,21 +714,17 @@
         <div class="header-top">
             <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
             <h2 class="section-title" style="font-size: 1.1rem;">Blackjack</h2>
-            <div style="width: 70px;"></div>
+            <!-- Добавлен баланс в шапку экрана блэкджека -->
+            <div class="balance-badge" style="padding: 4px 10px;">
+                <span class="balance-plus" style="font-size: 0.85rem;">+</span>
+                <div class="balance-chip">
+                    <span style="font-size: 0.85rem;">💳</span>
+                    <span class="balance-value" id="bj-balance-value" style="font-size: 0.85rem;">0</span>
+                </div>
+            </div>
         </div>
 
         <div class="game-screen-bj">
-            <!-- Блок ставки -->
-            <div class="bj-bet-section">
-                <div class="bj-bet-info">Ставка: <span id="current-bet">100</span></div>
-                <div class="bj-bet-chips">
-                    <button class="bj-bet-btn" onclick="changeBet(50)">+50</button>
-                    <button class="bj-bet-btn" onclick="changeBet(100)">+100</button>
-                    <button class="bj-bet-btn" onclick="changeBet(500)">+500</button>
-                    <button class="bj-bet-btn" onclick="resetBet()">Сброс</button>
-                </div>
-            </div>
-
             <!-- Зона дилера -->
             <div class="bj-table-section">
                 <div class="bj-table-header">
@@ -748,6 +744,17 @@
                     <span>Очки: <span id="player-score">0</span></span>
                 </div>
                 <div id="player-cards" class="card-container"></div>
+            </div>
+
+            <!-- Блок ставки (перенесен вниз перед кнопками управления) -->
+            <div class="bj-bet-section">
+                <div class="bj-bet-info">Ставка: <span id="current-bet">100</span></div>
+                <div class="bj-bet-chips">
+                    <button class="bj-bet-btn" onclick="changeBet(50)">+50</button>
+                    <button class="bj-bet-btn" onclick="changeBet(100)">+100</button>
+                    <button class="bj-bet-btn" onclick="changeBet(500)">+500</button>
+                    <button class="bj-bet-btn" onclick="resetBet()">Сброс</button>
+                </div>
             </div>
 
             <!-- Кнопки управления игрой -->
@@ -911,6 +918,7 @@
                     currentUserData.score = data.score;
                     document.querySelector('.balance-value').textContent = data.score;
                     document.getElementById('header-balance').textContent = data.score;
+                    document.getElementById('bj-balance-value').textContent = data.score;
                 }
 
                 const avatarRes = await fetch(`${API_URL}/api/user/avatar?tg_id=${currentUserData.tg_id}`);
@@ -940,6 +948,7 @@
                     currentUserData.score = data.score;
                     document.querySelector('.balance-value').textContent = data.score;
                     document.getElementById('header-balance').textContent = data.score;
+                    document.getElementById('bj-balance-value').textContent = data.score;
                     
                     const statusText = document.getElementById('bonus-status-text');
                     statusText.textContent = "ПОЛУЧЕНО";
