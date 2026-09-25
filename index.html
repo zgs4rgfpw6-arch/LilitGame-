@@ -575,6 +575,44 @@
             box-shadow: none;
             cursor: not-allowed;
         }
+
+        /* Дополнительные стили для ставок Blackjack */
+        .bj-bet-section {
+            background: #111116;
+            border: 1px solid rgba(255, 42, 117, 0.3);
+            border-radius: 16px;
+            padding: 12px 14px;
+            width: 100%;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bj-bet-info {
+            font-size: 0.9rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .bj-bet-chips {
+            display: flex;
+            gap: 6px;
+        }
+        .bj-bet-btn {
+            background: rgba(255, 42, 117, 0.15);
+            border: 1px solid rgba(255, 42, 117, 0.4);
+            border-radius: 8px;
+            color: #ff2a75;
+            padding: 6px 10px;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .bj-bet-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -680,6 +718,17 @@
         </div>
 
         <div class="game-screen-bj">
+            <!-- Блок ставки -->
+            <div class="bj-bet-section">
+                <div class="bj-bet-info">Ставка: <span id="current-bet">100</span></div>
+                <div class="bj-bet-chips">
+                    <button class="bj-bet-btn" onclick="changeBet(50)">+50</button>
+                    <button class="bj-bet-btn" onclick="changeBet(100)">+100</button>
+                    <button class="bj-bet-btn" onclick="changeBet(500)">+500</button>
+                    <button class="bj-bet-btn" onclick="resetBet()">Сброс</button>
+                </div>
+            </div>
+
             <!-- Зона дилера -->
             <div class="bj-table-section">
                 <div class="bj-table-header">
@@ -701,7 +750,7 @@
                 <div id="player-cards" class="card-container"></div>
             </div>
 
-            <!-- Кнопки -->
+            <!-- Кнопки управления игрой -->
             <div class="bj-controls">
                 <button id="btn-deal" class="neon-btn" onclick="startBlackjack()">Раздать</button>
                 <button id="btn-hit" class="neon-btn" onclick="playerHit()" disabled>Ещё</button>
