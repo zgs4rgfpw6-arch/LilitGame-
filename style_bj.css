@@ -1,115 +1,138 @@
-/* Основные стили экрана блекджека */
+/* Базовые сбросы и размеры экранов */
 body {
-    background-color: #0d0d0f;
+    background-color: #060608;
     color: #ffffff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Lexend', sans-serif;
     margin: 0;
     padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    height: 100vh;
     box-sizing: border-box;
-    overflow: hidden;
 }
 
-.blackjack-container {
+.screen {
+    display: none;
     width: 100%;
-    max-width: 400px;
+    box-sizing: border-box;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Контейнеры меню и элементов на всю ширину */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.menu-card {
+    background: #111116;
+    border: 1px solid rgba(255, 42, 117, 0.25);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(255, 42, 117, 0.08);
+}
+
+.menu-card:active {
+    transform: scale(0.98);
+    border-color: rgba(255, 42, 117, 0.6);
+}
+
+/* Стили под старый блекджек, чтобы ничего не ломалось */
+.game-screen-bj {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    height: 100%;
-}
-
-/* Заголовки и статус */
-h2 {
-    margin: 0;
-    font-size: 20px;
-    letter-spacing: 2px;
-    color: #00ffcc;
-    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-}
-
-.dealer-section, .player-section {
     width: 100%;
-    text-align: center;
+    box-sizing: border-box;
 }
 
-.dealer-section p, .player-section p {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    color: #8a8a93;
+.bj-table-section {
+    background: #111116;
+    border: 1px solid rgba(0, 210, 255, 0.3);
+    border-radius: 16px;
+    padding: 14px;
+    width: 100%;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
 }
 
-/* Контейнеры для карт с эффектом веера */
-.cards-flex {
+.bj-table-header {
     display: flex;
-    justify-content: center;
-    min-height: 110px;
-    position: relative;
-}
-
-/* Карточки */
-.bj-card {
-    width: 70px;
-    height: 102px;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-    margin-left: -25px; /* Эффект наложения карт друг на друга */
-    transition: transform 0.3s ease;
-    transform: translateZ(0); /* Аппаратное ускорение для плавности в iOS */
-}
-
-.bj-card:first-child {
-    margin-left: 0;
-}
-
-/* Информационное сообщение */
-.bj-message {
-    font-size: 16px;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #00d2ff;
     font-weight: 600;
-    color: #ff007f;
-    text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
-    min-height: 24px;
-    text-align: center;
+    margin-bottom: 8px;
 }
 
-/* Панель управления (Кнопки) */
+.card-container {
+    display: flex;
+    gap: 6px;
+    min-height: 100px;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.bj-card {
+    width: 65px;
+    height: 92px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+}
+
+.game-message {
+    text-align: center;
+    color: #ff2a75;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 10px 0;
+    min-height: 24px;
+    text-shadow: 0 0 8px rgba(255, 42, 117, 0.4);
+}
+
 .bj-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
+    margin-top: 10px;
 }
 
-.bj-controls button {
+.neon-btn {
     flex: 1;
-    padding: 12px 0;
+    background: linear-gradient(135deg, #00ffaa, #00d2ff);
+    color: #000000;
     border: none;
+    padding: 12px;
     border-radius: 12px;
-    font-size: 15px;
-    font-weight: bold;
+    font-family: 'Lexend', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 0 12px rgba(0, 255, 170, 0.3);
     cursor: pointer;
-    background: #1a1a24;
-    color: #00ffcc;
-    border: 1px solid #00ffcc;
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
     transition: all 0.2s ease;
 }
 
-.bj-controls button:active:not(:disabled) {
-    transform: scale(0.96);
-    background: #00ffcc;
-    color: #0d0d0f;
+.neon-btn:active {
+    transform: scale(0.95);
 }
 
-.bj-controls button:disabled {
-    border-color: #33333d;
-    color: #555563;
-    background: #121217;
+.neon-btn:disabled {
+    background: #1a1a24;
+    color: #555566;
     box-shadow: none;
     cursor: not-allowed;
 }
