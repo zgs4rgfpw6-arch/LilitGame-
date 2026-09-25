@@ -331,10 +331,11 @@ def update_score(game_id: str, new_score: int):
 DURAK_TABLES = {}
 
 class DurakTable:
-    def __init__(self, table_id, creator_id, creator_name, max_players, bet):
+    def __init__(self, table_id, creator_id, creator_name, max_players, bet, deck_size=36):
         self.table_id = table_id
         self.max_players = max_players
         self.bet = bet
+        self.deck_size = int(deck_size)
         self.players = [{
             "id": creator_id,
             "name": creator_name,
@@ -349,7 +350,15 @@ class DurakTable:
 
     def start_game(self):
         suits = ['♠', '♣', '♥', '♦']
-        ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        
+        # Выбираем ранги в зависимости от выбранного размера колоды
+        if self.deck_size == 24:
+            ranks = ['9', '10', 'J', 'Q', 'K', 'A']
+        elif self.deck_size == 52:
+            ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        else:  # по умолчанию 36
+            ranks = ['6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+            
         ranks_value = {r: i for i, r in enumerate(ranks)}
         
         deck = []
@@ -386,20 +395,22 @@ def get_durak_tables():
                 "creator_name": table.players[0]["name"],
                 "max_players": table.max_players,
                 "current_players": len(table.players),
-                "bet": table.bet
+                "bet": table.bet,
+                "deck_size": table.deck_size
             })
     return open_tables
 
 
 @app.post("/api/durak/create")
-def create_durak_table(game_id: str = Query(...), name: str = Query(...), max_players: int = Query(2), bet: int = Query(100)):
+def create_durak_table(game_id: str = Query(...), name: str = Query(...), max_players: int = Query(2), bet: int = Query(100), deck_size: int = Query(36)):
     table_id = "TBL-" + str(uuid.uuid4())[:6].upper()
     new_table = DurakTable(
         table_id=table_id,
         creator_id=game_id,
         creator_name=name,
         max_players=max_players,
-        bet=bet
+        bet=bet,
+        deck_size=deck_size
     )
     DURAK_TABLES[table_id] = new_table
     return {"status": "success", "table_id": table_id}
