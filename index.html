@@ -714,7 +714,6 @@
         <div class="header-top">
             <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
             <h2 class="section-title" style="font-size: 1.1rem;">Blackjack</h2>
-            <!-- Добавлен баланс в шапку экрана блэкджека -->
             <div class="balance-badge" style="padding: 4px 10px;">
                 <span class="balance-plus" style="font-size: 0.85rem;">+</span>
                 <div class="balance-chip">
@@ -746,7 +745,7 @@
                 <div id="player-cards" class="card-container"></div>
             </div>
 
-            <!-- Блок ставки (перенесен вниз перед кнопками управления) -->
+            <!-- Блок ставки -->
             <div class="bj-bet-section">
                 <div class="bj-bet-info">Ставка: <span id="current-bet">100</span></div>
                 <div class="bj-bet-chips">
@@ -861,6 +860,80 @@
         let myFriends = [];
         let incomingRequests = [];
 
+        // --- ЛОГИКА СТАВОК И БЛЭКДЖЕКА ---
+        let currentBet = 100;
+
+        function changeBet(amount) {
+            let newBet = currentBet + amount;
+            if (newBet > currentUserData.score) {
+                currentBet = currentUserData.score > 0 ? currentUserData.score : 0;
+            } else {
+                currentBet = newBet;
+            }
+            updateBetUI();
+        }
+
+        function resetBet() {
+            currentBet = currentUserData.score >= 100 ? 100 : (currentUserData.score > 0 ? currentUserData.score : 0);
+            updateBetUI();
+        }
+
+        function updateBetUI() {
+            const betElement = document.getElementById('current-bet');
+            if (betElement) {
+                betElement.textContent = currentBet;
+            }
+        }
+
+        async function updateScore(newScore) {
+            currentUserData.score = newScore;
+            
+            // Обновляем во всех элементах баланса на странице
+            document.querySelectorAll('.balance-value').forEach(el => {
+                el.textContent = newScore;
+            });
+
+            try {
+                await fetch(`${API_URL}/api/score/update?game_id=${currentUserData.game_id}&score=${newScore}`, {
+                    method: "POST"
+                });
+            } catch (error) {
+                console.error("Ошибка обновления баланса на сервере:", error);
+            }
+        }
+
+        // Пример интеграции в раздачу (списание ставки)
+        function startBlackjack() {
+            if (currentBet <= 0) {
+                alert("Сделайте ставку!");
+                return;
+            }
+            if (currentUserData.score < currentBet) {
+                alert("Недостаточно фишек для ставки!");
+                return;
+            }
+
+            // Списываем ставку при старте раунда
+            let newScore = currentUserData.score - currentBet;
+            updateScore(newScore);
+
+            document.getElementById('bj-message').textContent = "Игра идет...";
+            document.getElementById('btn-deal').disabled = true;
+            document.getElementById('btn-hit').disabled = false;
+            document.getElementById('btn-stand').disabled = false;
+
+            // Здесь будет код генерации карт игрока и дилера...
+        }
+
+        function playerHit() {
+            // Логика взятия карты
+        }
+
+        function playerStand() {
+            // Логика остановки и подсчета очков дилера
+        }
+        // ----------------------------------
+
         document.addEventListener('DOMContentLoaded', () => {
             let tg = window.Telegram?.WebApp;
             if (tg) {
@@ -916,9 +989,14 @@
                 
                 if (data.score !== undefined) {
                     currentUserData.score = data.score;
-                    document.querySelector('.balance-value').textContent = data.score;
-                    document.getElementById('header-balance').textContent = data.score;
-                    document.getElementById('bj-balance-value').textContent = data.score;
+                    document.querySelectorAll('.balance-value').forEach(el => {
+                        el.textContent = data.score;
+                    });
+                    // Корректируем ставку, если она стала выше актуального баланса
+                    if (currentBet > data.score) {
+                        currentBet = data.score > 0 ? data.score : 0;
+                        updateBetUI();
+                    }
                 }
 
                 const avatarRes = await fetch(`${API_URL}/api/user/avatar?tg_id=${currentUserData.tg_id}`);
@@ -946,9 +1024,9 @@
                 
                 if (response.ok) {
                     currentUserData.score = data.score;
-                    document.querySelector('.balance-value').textContent = data.score;
-                    document.getElementById('header-balance').textContent = data.score;
-                    document.getElementById('bj-balance-value').textContent = data.score;
+                    document.querySelectorAll('.balance-value').forEach(el => {
+                        el.textContent = data.score;
+                    });
                     
                     const statusText = document.getElementById('bonus-status-text');
                     statusText.textContent = "ПОЛУЧЕНО";
