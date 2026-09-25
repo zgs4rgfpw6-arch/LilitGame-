@@ -124,68 +124,83 @@ async function updateDurakState() {
 
 // Отрисовка игрового процесса
 function renderDurakGame(state) {
-    document.getElementById("durak-room-title").textContent = `Стол #${durakTableId.slice(-4)}`;
-    document.getElementById("durak-deck-count").textContent = state.deck_count;
+    // Безопасное обновление счетчика колоды
+    const deckCountEl = document.getElementById("durak-deck-count");
+    if (deckCountEl) deckCountEl.textContent = state.deck_count;
     
     // Козырная карта
     const trumpEl = document.getElementById("durak-trump-card");
-    if (state.trump_card) {
+    if (trumpEl && state.trump_card) {
         const isRed = state.trump_card.suit === '♥' || state.trump_card.suit === '♦';
         trumpEl.innerHTML = `<span style="color: ${isRed ? '#ff2a75' : '#00d2ff'}">${state.trump_card.rank}${state.trump_card.suit}</span>`;
-    } else {
-        trumpEl.textContent = "—";
     }
 
     // Сообщение / статус хода
     const msgEl = document.getElementById("durak-message");
-    msgEl.textContent = state.status_message || (state.is_my_turn ? "Ваш ход!" : "Ход противника...");
+    if (msgEl) {
+        msgEl.textContent = state.status_message || (state.is_my_turn ? "Ваш ход!" : "Ход противника...");
+    }
 
-    // Противники
+    // Противники (обновляем имя, количество карт и аватарку)
     const enemyNameEl = document.getElementById("durak-enemy-name");
     const enemyCountEl = document.getElementById("durak-enemy-count");
     const enemyCardsContainer = document.getElementById("durak-enemy-cards");
+    const enemyAvatarEl = document.getElementById("durak-enemy-avatar");
 
     if (state.opponents && state.opponents.length > 0) {
         const opp = state.opponents[0];
-        enemyNameEl.textContent = opp.name.toUpperCase();
-        enemyCountEl.textContent = opp.cards_count;
+        if (enemyNameEl) enemyNameEl.textContent = opp.name.toUpperCase();
+        if (enemyCountEl) enemyCountEl.textContent = opp.cards_count;
         
-        // Рубашки карт противника
-        enemyCardsContainer.innerHTML = Array(opp.cards_count).fill('<div class="bj-card" style="background: #1a1a24; border: 1px solid rgba(255,42,117,0.3); width: 50px; height: 75px;"></div>').join('');
+        if (enemyAvatarEl && opp.avatar) {
+            enemyAvatarEl.innerHTML = `<img src="${opp.avatar}" alt="" style="width: 100%; height: 100%; object-fit: cover;">`;
+        }
+        
+        if (enemyCardsContainer) {
+            enemyCardsContainer.innerHTML = Array(opp.cards_count).fill('<div class="bj-card" style="background: #1a1a24; border: 1px solid rgba(255,42,117,0.3); width: 50px; height: 75px;"></div>').join('');
+        }
     }
 
     // Карты на столе (пары атака / защита)
     const tableCardsContainer = document.getElementById("durak-table-cards");
-    tableCardsContainer.innerHTML = "";
-    if (state.table_cards && state.table_cards.length > 0) {
-        state.table_cards.forEach(pair => {
-            const pairDiv = document.createElement("div");
-            pairDiv.style.display = "flex";
-            pairDiv.style.gap = "4px";
-            pairDiv.style.alignItems = "center";
-            pairDiv.style.background = "rgba(0,0,0,0.2)";
-            pairDiv.style.padding = "4px";
-            pairDiv.style.borderRadius = "8px";
+    if (tableCardsContainer) {
+        tableCardsContainer.innerHTML = "";
+        if (state.table_cards && state.table_cards.length > 0) {
+            state.table_cards.forEach(pair => {
+                const pairDiv = document.createElement("div");
+                pairDiv.style.display = "flex";
+                pairDiv.style.gap = "4px";
+                pairDiv.style.alignItems = "center";
+                pairDiv.style.background = "rgba(0,0,0,0.2)";
+                pairDiv.style.padding = "4px";
+                pairDiv.style.borderRadius = "8px";
 
-            const attRed = pair.attack.suit === '♥' || pair.attack.suit === '♦';
-            pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${attRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.attack.rank}${pair.attack.suit}</div>`;
+                const attRed = pair.attack.suit === '♥' || pair.attack.suit === '♦';
+                pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${attRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.attack.rank}${pair.attack.suit}</div>`;
 
-            if (pair.defense) {
-                const defRed = pair.defense.suit === '♥' || pair.defense.suit === '♦';
-                pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${defRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.defense.rank}${pair.defense.suit}</div>`;
-            } else {
-                pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #1a1a24; color: #8c8c99; font-size: 0.8rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2);">?</div>`;
-            }
-            tableCardsContainer.appendChild(pairDiv);
-        });
-    } else {
-        tableCardsContainer.innerHTML = `<div style="color: #8c8c99; font-size: 0.85rem;">Стол пуст</div>`;
+                if (pair.defense) {
+                    const defRed = pair.defense.suit === '♥' || pair.defense.suit === '♦';
+                    pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${defRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.defense.rank}${pair.defense.suit}</div>`;
+                } else {
+                    pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #1a1a24; color: #8c8c99; font-size: 0.8rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2);">?</div>`;
+                }
+                tableCardsContainer.appendChild(pairDiv);
+            });
+        } else {
+            tableCardsContainer.innerHTML = `<div style="color: #8c8c99; font-size: 0.85rem;">Стол пуст</div>`;
+        }
     }
 
     // Мои карты в руке
     const myCardsContainer = document.getElementById("durak-player-cards");
-    myCardsContainer.innerHTML = "";
-    if (state.my_cards) {
+    const myCardsCountEl = document.getElementById("durak-my-cards-count");
+    
+    if (myCardsCountEl && state.my_cards) {
+        myCardsCountEl.textContent = `Карт: ${state.my_cards.length}`;
+    }
+
+    if (myCardsContainer && state.my_cards) {
+        myCardsContainer.innerHTML = "";
         state.my_cards.forEach((card, index) => {
             const isRed = card.suit === '♥' || card.suit === '♦';
             const cardEl = document.createElement("div");
@@ -206,28 +221,26 @@ function renderDurakGame(state) {
     const actionBtn = document.getElementById("btn-durak-action");
     const takeBtn = document.getElementById("btn-durak-take");
 
-    actionBtn.disabled = !state.is_my_turn;
-    takeBtn.disabled = !state.is_my_turn;
-    
-    // Меняем текст кнопки в зависимости от роли (атака/бито или защита)
-    actionBtn.textContent = state.is_attacker ? "Бито" : "Побить";
+    if (actionBtn && takeBtn) {
+        actionBtn.disabled = !state.is_my_turn;
+        takeBtn.disabled = !state.is_my_turn;
+        actionBtn.textContent = state.is_attacker ? "Бито" : "Побить";
+    }
 }
 
 // Выбор карты в руке
 function selectCard(index) {
     selectedDurakCard = selectedDurakCard === index ? null : index;
-    updateDurakState(); // Перерисовка для подсветки выбранной карты
+    updateDurakState();
 }
 
 // Кнопка главного действия (Атака / Бито / Защита)
 async function durakMainAction() {
     if (selectedDurakCard === null) {
-        // Если карта не выбрана, возможно это нажатие «Бито»
         sendDurakAction("bito");
         return;
     }
 
-    // Отправляем ход с выбранной картой
     try {
         const response = await fetch(`${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&card_index=${selectedDurakCard}`, {
             method: "POST"
@@ -256,7 +269,7 @@ async function sendDurakAction(actionType) {
         });
         const data = await response.json();
         if (response.ok) {
-            selectedDurakCard = null;
+            selectedDurakCard, selectedDurakCard = null;
             updateDurakState();
         } else {
             alert(data.detail || "Действие недоступно");
