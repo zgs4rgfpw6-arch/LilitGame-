@@ -296,3 +296,28 @@ def remove_friend(user_game_id: str, target_game_id: str):
     cursor.close()
     conn.close()
     return {"status": "removed"}
+    
+@app.post("/api/user/update-score")
+def update_score(game_id: str, new_score: int):
+    init_db()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT score FROM users WHERE game_id = %s", (game_id,))
+    row = cursor.fetchone()
+    
+    if not row:
+        cursor.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="Игрок не найден")
+        
+    cursor.execute(
+        "UPDATE users SET score = %s WHERE game_id = %s",
+        (new_score, game_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    return {"status": "ok", "score": new_score}
+
