@@ -1,183 +1,267 @@
-// Клиентская логика для игры "Дурак" в LILIT CASINO
-const API_URL = ""; // Если бэкенд на том же домене, оставляем пустым или указываем URL рендерера
+// Клиентская логика для игры "Дурак" под интерфейс LILIT CASINO
 
-let currentTableId = null;
-let currentGameId = localStorage.getItem("game_id") || "ID-0001";
-let currentName = localStorage.getItem("user_name") || "Игрок";
-let pollingInterval = null;
+let durakTableId = null;
+let durakPollInterval = null;
+let selectedDurakCard = null;
 
-// Инициализация при загрузке страницы
-document.addEventListener("DOMContentLoaded", () => {
-    // Проверяем, есть ли элементы для лобби или игры, и вешаем обработчики
-    setupLobbyListeners();
-});
+// Загрузка списка столов в лобби
+async function loadDurakTables() {
+    const container = document.getElementById("durak-tables-container");
+    if (!container) return;
 
-function setupLobbyListeners() {
-    const createBtn = document.getElementById("createTableBtn");
-    if (createBtn) {
-        createBtn.addEventListener("click", async () => {
-            const deckSize = document.getElementById("deckSizeSelect")?.value || 36;
-            const bet = document.getElementById("betInput")?.value || 100;
-            
-            try {
-                const res = await fetch(`${API_URL}/api/durak/create?game_id=${currentGameId}&name=${encodeURIComponent(currentName)}&max_players=2&bet=${bet}&deck_size=${deckSize}`, {
-                    method: "POST"
-                });
-                const data = await res.json();
-                if (data.status === "success") {
-                    currentTableId = data.table_id;
-                    startPolling();
-                    showGameScreen();
-                }
-            } catch (e) {
-                console.error("Ошибка создания стола:", e);
-            }
-        });
+    container.innerHTML = `<div class="empty-text">Загрузка столов...</div>`;
+
+    try {
+        const response = await fetch(`${API_URL}/api/durak/tables?game_id=${currentUserData.game_id}`);
+        const tables = await response.json();
+
+        if (!tables || tables.length === 0) {
+            container.innerHTML = `<div class="empty-text">Нет активных столов. Создайте свой!</div>`;
+            return;
+        }
+
+        container.innerHTML = tables.map(table => `
+            <div class="table-card">
+                <div class="table-info">
+                    <div class="table-name">Стол #${table.table_id.slice(-4)} (${table.host_name})</div>
+                    <div class="table-meta">Ставка: ${table.bet} 💳 | Игроков: ${table.players_count}/${table.max_players}</div>
+                </div>
+                <button class="mini-btn" onclick="joinDurakTable('${table.table_id}')">Войти</button>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error("Ошибка загрузки столов:", error);
+        container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Ошибка загрузки столов</div>`;
     }
 }
 
-async function joinTable(tableId) {
-    currentTableId = tableId;
+// Создание стола
+async function createDurakTable() {
+    const playersCount = document.getElementById("durak-players-count").value;
+    const betAmount = document.getElementById("durak-bet-amount").value;
+
+    if (currentUserData.score < parseInt(betAmount)) {
+        alert("Недостаточно средств для ставки!");
+        return;
+    }
+
     try {
-        const res = await fetch(`${API_URL}/api/durak/join?table_id=${tableId}&game_id=${currentGameId}&name=${encodeURIComponent(currentName)}`, {
+        const response = await fetch(`${API_URL}/api/durak/create?game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}&max_players=${playersCount}&bet=${betAmount}&deck_size=36`, {
             method: "POST"
         });
-        const data = await res.json();
-        if (data.status === "success") {
-            startPolling();
-            showGameScreen();
-        }
-    } catch (e) {
-        console.error("Ошибка подключения к столу:", e);
-    }
-}
+        const data = await response.json();
 
-function startPolling() {
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(updateGameState, 1500);
-    updateGameState(); // Первый запрос сразу
-}
-
-async function updateGameState() {
-    if (!currentTableId) return;
-    try {
-        const res = await fetch(`${API_URL}/api/durak/state?table_id=${currentTableId}&game_id=${currentGameId}`);
-        const state = await res.json();
-        renderGame(state);
-    } catch (e) {
-        console.error("Ошибка получения состояния игры:", e);
-    }
-}
-
-function renderGame(state) {
-    // 1. Отрисовка противников (вверху)
-    const opponentContainer = document.getElementById("opponentContainer");
-    if (opponentContainer && state.opponents.length > 0) {
-        const opp = state.opponents[0];
-        opponentContainer.innerHTML = `
-            <div class="opponent-card">
-                <div class="opponent-name">${opp.name}</div>
-                <div class="cards-count">🃏 ${opp.cards_count} карт</div>
-            </div>
-        `;
-    }
-
-    // 2. Отрисовка колоды и козыря (слева)
-    const deckContainer = document.getElementById("deckContainer");
-    if (deckContainer) {
-        if (state.deck_count > 0 && state.trump_card) {
-            deckContainer.innerHTML = `
-                <div class="deck-pile">Остаток: ${state.deck_count}</div>
-                <div class="trump-card card ${state.trump_card.suit === '♥' || state.trump_card.suit === '♦' ? 'red' : 'black'}">
-                    ${state.trump_card.rank}${state.trump_card.suit}
-                </div>
-            `;
+        if (response.ok && data.table_id) {
+            durakTableId = data.table_id;
+            switchScreen('screen-durak-game');
+            startDurakPolling();
         } else {
-            deckContainer.innerHTML = `<div class="deck-pile">Колода пуста</div>`;
+            alert(data.detail || "Не удалось создать стол");
         }
+    } catch (error) {
+        console.error("Ошибка создания стола:", error);
+        alert("Ошибка соединения с сервером");
+    }
+}
+
+// Вход в существующий стол
+async function joinDurakTable(tableId) {
+    try {
+        const response = await fetch(`${API_URL}/api/durak/join?table_id=${tableId}&game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}`, {
+            method: "POST"
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            durakTableId = tableId;
+            switchScreen('screen-durak-game');
+            startDurakPolling();
+        } else {
+            alert(data.detail || "Не удалось войти в игру");
+        }
+    } catch (error) {
+        console.error("Ошибка входа в стол:", error);
+        alert("Ошибка соединения с сервером");
+    }
+}
+
+// Выход из игры
+function leaveDurakGame() {
+    stopDurakPolling();
+    durakTableId = null;
+    switchScreen('screen-durak-lobby');
+    loadDurakTables();
+}
+
+// Запуск пуллинга (обновления состояния игры)
+function startDurakPolling() {
+    if (durakPollInterval) clearInterval(durakPollInterval);
+    updateDurakState();
+    durakPollInterval = setInterval(updateDurakState, 1500);
+}
+
+function stopDurakPolling() {
+    if (durakPollInterval) {
+        clearInterval(durakPollInterval);
+        durakPollInterval = null;
+    }
+}
+
+// Получение состояния игры с сервера и рендер
+async function updateDurakState() {
+    if (!durakTableId) return;
+
+    try {
+        const response = await fetch(`${API_URL}/api/durak/state?table_id=${durakTableId}&game_id=${currentUserData.game_id}`);
+        if (!response.ok) return;
+        const state = await response.json();
+
+        renderDurakGame(state);
+    } catch (error) {
+        console.error("Ошибка обновления состояния игры:", error);
+    }
+}
+
+// Отрисовка игрового процесса
+function renderDurakGame(state) {
+    document.getElementById("durak-room-title").textContent = `Стол #${durakTableId.slice(-4)}`;
+    document.getElementById("durak-deck-count").textContent = state.deck_count;
+    
+    // Козырная карта
+    const trumpEl = document.getElementById("durak-trump-card");
+    if (state.trump_card) {
+        const isRed = state.trump_card.suit === '♥' || state.trump_card.suit === '♦';
+        trumpEl.innerHTML = `<span style="color: ${isRed ? '#ff2a75' : '#00d2ff'}">${state.trump_card.rank}${state.trump_card.suit}</span>`;
+    } else {
+        trumpEl.textContent = "—";
     }
 
-    // 3. Отрисовка игрового стола (пары атака/защита)
-    const tableContainer = document.getElementById("tableContainer");
-    if (tableContainer) {
-        tableContainer.innerHTML = "";
+    // Сообщение / статус хода
+    const msgEl = document.getElementById("durak-message");
+    msgEl.textContent = state.status_message || (state.is_my_turn ? "Ваш ход!" : "Ход противника...");
+
+    // Противники
+    const enemyNameEl = document.getElementById("durak-enemy-name");
+    const enemyCountEl = document.getElementById("durak-enemy-count");
+    const enemyCardsContainer = document.getElementById("durak-enemy-cards");
+
+    if (state.opponents && state.opponents.length > 0) {
+        const opp = state.opponents[0];
+        enemyNameEl.textContent = opp.name.toUpperCase();
+        enemyCountEl.textContent = opp.cards_count;
+        
+        // Рубашки карт противника
+        enemyCardsContainer.innerHTML = Array(opp.cards_count).fill('<div class="bj-card" style="background: #1a1a24; border: 1px solid rgba(255,42,117,0.3); width: 50px; height: 75px;"></div>').join('');
+    }
+
+    // Карты на столе (пары атака / защита)
+    const tableCardsContainer = document.getElementById("durak-table-cards");
+    tableCardsContainer.innerHTML = "";
+    if (state.table_cards && state.table_cards.length > 0) {
         state.table_cards.forEach(pair => {
             const pairDiv = document.createElement("div");
-            pairDiv.className = "table-pair";
-            
-            const attColor = pair.attack.suit === '♥' || pair.attack.suit === '♦' ? 'red' : 'black';
-            let html = `<div class="card ${attColor}">${pair.attack.rank}${pair.attack.suit}</div>`;
-            
+            pairDiv.style.display = "flex";
+            pairDiv.style.gap = "4px";
+            pairDiv.style.alignItems = "center";
+            pairDiv.style.background = "rgba(0,0,0,0.2)";
+            pairDiv.style.padding = "4px";
+            pairDiv.style.borderRadius = "8px";
+
+            const attRed = pair.attack.suit === '♥' || pair.attack.suit === '♦';
+            pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${attRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.attack.rank}${pair.attack.suit}</div>`;
+
             if (pair.defense) {
-                const defColor = pair.defense.suit === '♥' || pair.defense.suit === '♦' ? 'red' : 'black';
-                html += `<div class="card ${defColor}">${pair.defense.rank}${pair.defense.suit}</div>`;
+                const defRed = pair.defense.suit === '♥' || pair.defense.suit === '♦';
+                pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${defRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.defense.rank}${pair.defense.suit}</div>`;
             } else {
-                html += `<div class="card empty-slot">?</div>`;
+                pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #1a1a24; color: #8c8c99; font-size: 0.8rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,0.2);">?</div>`;
             }
-            pairDiv.innerHTML = html;
-            tableContainer.appendChild(pairDiv);
+            tableCardsContainer.appendChild(pairDiv);
         });
+    } else {
+        tableCardsContainer.innerHTML = `<div style="color: #8c8c99; font-size: 0.85rem;">Стол пуст</div>`;
     }
 
-    // 4. Отрисовка карт игрока (вручную)
-    const myCardsContainer = document.getElementById("myCardsContainer");
-    if (myCardsContainer) {
-        myCardsContainer.innerHTML = "";
-        state.my_cards.forEach(card => {
-            const cardEl = document.createElement("div");
+    // Мои карты в руке
+    const myCardsContainer = document.getElementById("durak-player-cards");
+    myCardsContainer.innerHTML = "";
+    if (state.my_cards) {
+        state.my_cards.forEach((card, index) => {
             const isRed = card.suit === '♥' || card.suit === '♦';
-            cardEl.className = `card player-card ${isRed ? 'red' : 'black'}`;
-            cardEl.innerHTML = `${card.rank}${card.suit}`;
-            
-            // Клик по карте для хода (атака или защита)
-            cardEl.addEventListener("click", () => sendAction(state.is_my_turn, card));
+            const cardEl = document.createElement("div");
+            cardEl.className = "bj-card";
+            cardEl.style.cssText = `
+                width: 65px; height: 95px; background: #fff; color: ${isRed ? '#ff2a75' : '#000'};
+                display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem;
+                cursor: pointer; border-radius: 8px; transition: transform 0.2s;
+                ${selectedDurakCard === index ? 'transform: translateY(-10px); box-shadow: 0 0 15px #ff2a75;' : ''}
+            `;
+            cardEl.textContent = `${card.rank}${card.suit}`;
+            cardEl.onclick = () => selectCard(index);
             myCardsContainer.appendChild(cardEl);
         });
     }
 
-    // 5. Управление кнопками (Бито / Взять)
-    const actionPanel = document.getElementById("actionPanel");
-    if (actionPanel) {
-        actionPanel.style.display = state.is_my_turn ? "flex" : "none";
-    }
+    // Активность кнопок управления
+    const actionBtn = document.getElementById("btn-durak-action");
+    const takeBtn = document.getElementById("btn-durak-take");
+
+    actionBtn.disabled = !state.is_my_turn;
+    takeBtn.disabled = !state.is_my_turn;
+    
+    // Меняем текст кнопки в зависимости от роли (атака/бито или защита)
+    actionBtn.textContent = state.is_attacker ? "Бито" : "Побить";
 }
 
-async function sendAction(isMyTurn, card = null, actionType = null) {
-    if (!isMyTurn) return;
-    
-    // Определяем тип действия: если есть карта, смотрим, атакуем мы или защищаемся
-    let type = actionType;
-    if (card && !type) {
-        // Простая логика: если есть неотбитая пара на столе, то это защита, иначе атака
-        // Сервер сам проверит корректность
-        type = "attack"; 
-        // Здесь можно доработать определение (если ты защищаешься)
+// Выбор карты в руке
+function selectCard(index) {
+    selectedDurakCard = selectedDurakCard === index ? null : index;
+    updateDurakState(); // Перерисовка для подсветки выбранной карты
+}
+
+// Кнопка главного действия (Атака / Бито / Защита)
+async function durakMainAction() {
+    if (selectedDurakCard === null) {
+        // Если карта не выбрана, возможно это нажатие «Бито»
+        sendDurakAction("bito");
+        return;
     }
 
-    let url = `${API_URL}/api/durak/action?table_id=${currentTableId}&game_id=${currentGameId}&action_type=${type}`;
-    if (card) {
-        url += `&card_rank=${card.rank}&card_suit=${encodeURIComponent(card.suit)}`;
-    }
-
+    // Отправляем ход с выбранной картой
     try {
-        const res = await fetch(url, { method: "POST" });
-        const data = await res.json();
-        if (data.status === "ok") {
-            updateGameState();
+        const response = await fetch(`${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&card_index=${selectedDurakCard}`, {
+            method: "POST"
+        });
+        const data = await response.json();
+        if (response.ok) {
+            selectedDurakCard = null;
+            updateDurakState();
         } else {
             alert(data.detail || "Недопустимый ход");
         }
-    } catch (e) {
-        console.error("Ошибка отправки хода:", e);
+    } catch (error) {
+        console.error("Ошибка хода:", error);
     }
 }
 
-// Кнопки Бито и Взять
-window.actionBito = () => sendAction(true, null, "bito");
-window.actionTake = () => sendAction(true, null, "take");
+// Кнопка «Взять»
+async function durakTakeCards() {
+    sendDurakAction("take");
+}
 
-function showGameScreen() {
-    // Скрыть лобби, показать игровой экран (зависит от твоей верстки в index.html)
-    document.getElementById("lobbyScreen")?.classList.add("hidden");
-    document.getElementById("gameScreen")?.classList.remove("hidden");
+async function sendDurakAction(actionType) {
+    try {
+        const response = await fetch(`${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&action_type=${actionType}`, {
+            method: "POST"
+        });
+        const data = await response.json();
+        if (response.ok) {
+            selectedDurakCard = null;
+            updateDurakState();
+        } else {
+            alert(data.detail || "Действие недоступно");
+        }
+    } catch (error) {
+        console.error("Ошибка действия:", error);
+    }
 }
