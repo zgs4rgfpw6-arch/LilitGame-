@@ -69,8 +69,23 @@ let playerHand = [];
 let dealerHand = [];
 let userBalance = 8000; // Стартовый баланс
 
+// Функция синхронизации баланса с сервером Render
+async function syncBalanceWithServer(newBalance) {
+    const gameId = localStorage.getItem('game_id') || 'ID-0001'; 
+    try {
+        let response = await fetch(`https://lilitgame.onrender.com/api/user/update-score?game_id=${gameId}&new_score=${newBalance}`, {
+            method: 'POST'
+        });
+        let data = await response.json();
+        if (data.status === 'ok') {
+            console.log('Баланс успешно сохранен в базе данных:', data.score);
+        }
+    } catch (e) {
+        console.error('Ошибка при синхронизации баланса с сервером:', e);
+    }
+}
+
 function updateBalanceUI() {
-    // Убедитесь, что у элемента вывода баланса в HTML прописан id="user-balance"
     const balanceEl = document.getElementById('user-balance') || document.querySelector('.bj-top-bar .balance-val');
     if (balanceEl) {
         balanceEl.innerText = userBalance;
@@ -88,7 +103,7 @@ function createDeck() {
         }
     }
     
-    // Честное перемешивание (алгоритм Фишера — Йетса)
+    // Алгоритм Фишера — Йетса
     for (let i = newDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -104,11 +119,9 @@ function getCardWeight(val) {
 }
 
 function startBlackjack() {
-    // Получаем текущую ставку из поля ввода
     const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
     let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
 
-    // Проверки ставки и баланса
     if (currentBet <= 0) {
         document.getElementById('bj-message').innerText = 'Введите корректную ставку!';
         return;
@@ -118,9 +131,10 @@ function startBlackjack() {
         return;
     }
 
-    // Списываем ставку при раздаче
+    // Списываем ставку
     userBalance -= currentBet;
     updateBalanceUI();
+    syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
 
     deck = createDeck();
     playerHand = [deck.pop(), deck.pop()];
@@ -128,12 +142,12 @@ function startBlackjack() {
 
     updateBoard();
     
-    // Проверка на мгновенный блекджек у игрока с раздачи
     if (calculateScore(playerHand) === 21) {
         updateBoard(true);
-        let winnings = Math.floor(currentBet * 2.5); // Выплата 3:2 (ставка + 1.5 ставки)
+        let winnings = Math.floor(currentBet * 2.5);
         userBalance += winnings;
         updateBalanceUI();
+        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
         endGame('Блекджек! Автоматическая победа!');
         return;
     }
@@ -162,20 +176,22 @@ function playerStand() {
     }
     
     let playerScore = calculateScore(playerHand);
-    updateBoard(true); // Сначала показываем карты дилера
+    updateBoard(true);
     
     const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
     let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
 
     if (dealerScore > 21 || playerScore > dealerScore) {
-        userBalance += currentBet * 2; // Возврат ставки + выигрыш 1:1
+        userBalance += currentBet * 2;
         updateBalanceUI();
+        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
         endGame('Победа!');
     } else if (playerScore < dealerScore) {
         endGame('Дилер выиграл.');
     } else {
-        userBalance += currentBet; // Возврат ставки при ничьей
+        userBalance += currentBet;
         updateBalanceUI();
+        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
         endGame('Ничья.');
     }
 }
@@ -233,7 +249,6 @@ function endGame(message) {
     if (standBtn) standBtn.disabled = true;
 }
 
-// Вызовите updateBalanceUI() при загрузке страницы, чтобы отобразить начальные 8000
 document.addEventListener('DOMContentLoaded', () => {
     updateBalanceUI();
 });
