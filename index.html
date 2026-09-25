@@ -613,6 +613,81 @@
         .bj-bet-btn:active {
             transform: scale(0.95);
         }
+
+        /* Стили для лобби Дурака */
+        .durak-lobby-container {
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .lobby-action-box {
+            background: #111116;
+            border: 1px solid rgba(255, 42, 117, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 0 15px rgba(255, 42, 117, 0.1);
+        }
+        .lobby-action-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #ff2a75;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .lobby-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .lobby-row:last-child {
+            margin-bottom: 0;
+        }
+        .select-input {
+            flex: 1;
+            background: #0d0d12;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #ffffff;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .tables-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .table-card {
+            background: #111116;
+            border: 1px solid rgba(0, 210, 255, 0.25);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.05);
+        }
+        .table-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .table-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .table-meta {
+            font-size: 0.75rem;
+            color: #00d2ff;
+        }
     </style>
 </head>
 <body>
@@ -682,7 +757,7 @@
         </div>
 
         <div class="menu-container" style="margin-top: 20px;">
-            <div class="menu-card" onclick="alert('Скоро: Дурак')">
+            <div class="menu-card" onclick="switchScreen('screen-durak-lobby'); loadDurakTables();">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
                     <span class="card-title">ДУРАК</span>
@@ -704,6 +779,51 @@
                     <span class="card-title">РУЛЕТКА</span>
                 </div>
                 <span class="arrow-icon">→</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ЭКРАН ЛОББИ ДУРАКА -->
+    <div id="screen-durak-lobby" class="screen">
+        <div class="header-top">
+            <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
+            <h2 class="section-title" style="font-size: 1.1rem;">Дурак: Лобби</h2>
+            <div class="balance-badge" style="padding: 4px 10px;">
+                <span class="balance-plus" style="font-size: 0.85rem;">+</span>
+                <div class="balance-chip">
+                    <span style="font-size: 0.85rem;">💳</span>
+                    <span class="balance-value" style="font-size: 0.85rem;">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="durak-lobby-container">
+            <!-- Блок создания стола -->
+            <div class="lobby-action-box">
+                <div class="lobby-action-title">Создать стол</div>
+                <div class="lobby-row">
+                    <select id="durak-players-count" class="select-input">
+                        <option value="2">2 игрока</option>
+                        <option value="3">3 игрока</option>
+                    </select>
+                    <select id="durak-bet-amount" class="select-input">
+                        <option value="100">Ставка: 100 💳</option>
+                        <option value="500">Ставка: 500 💳</option>
+                        <option value="1000">Ставка: 1000 💳</option>
+                    </select>
+                </div>
+                <button class="neon-btn" style="width: 100%; margin-top: 5px;" onclick="createDurakTable()">Создать игру</button>
+            </div>
+
+            <!-- Список доступных столов -->
+            <div class="tables-list-header">
+                <span style="font-size: 0.85rem; color: #8c8c99; font-weight: 600; text-transform: uppercase;">Доступные столы</span>
+                <button class="mini-btn" onclick="loadDurakTables()">Обновить</button>
+            </div>
+
+            <div id="durak-tables-container">
+                <div class="empty-text">Нет активных столов. Создайте свой!</div>
             </div>
         </div>
     </div>
