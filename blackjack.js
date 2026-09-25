@@ -67,6 +67,15 @@ const cardImages = {
 let deck = [];
 let playerHand = [];
 let dealerHand = [];
+let userBalance = 8000; // Стартовый баланс
+
+function updateBalanceUI() {
+    // Убедитесь, что у элемента вывода баланса в HTML прописан id="user-balance"
+    const balanceEl = document.getElementById('user-balance') || document.querySelector('.bj-top-bar .balance-val');
+    if (balanceEl) {
+        balanceEl.innerText = userBalance;
+    }
+}
 
 function createDeck() {
     const suits = ['clubs', 'spades', 'hearts', 'diamonds'];
@@ -79,7 +88,7 @@ function createDeck() {
         }
     }
     
-    // Честный алгоритм перемешивания (Фишер-Йетс) вместо sort(() => Math.random() - 0.5)
+    // Честное перемешивание (алгоритм Фишера — Йетса)
     for (let i = newDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -95,15 +104,36 @@ function getCardWeight(val) {
 }
 
 function startBlackjack() {
+    // Получаем текущую ставку из поля ввода
+    const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
+    let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
+
+    // Проверки ставки и баланса
+    if (currentBet <= 0) {
+        document.getElementById('bj-message').innerText = 'Введите корректную ставку!';
+        return;
+    }
+    if (userBalance < currentBet) {
+        document.getElementById('bj-message').innerText = 'Недостаточно средств!';
+        return;
+    }
+
+    // Списываем ставку при раздаче
+    userBalance -= currentBet;
+    updateBalanceUI();
+
     deck = createDeck();
     playerHand = [deck.pop(), deck.pop()];
     dealerHand = [deck.pop(), deck.pop()];
 
     updateBoard();
     
-    // Проверка на мгновенный блекджек у игрока
+    // Проверка на мгновенный блекджек у игрока с раздачи
     if (calculateScore(playerHand) === 21) {
         updateBoard(true);
+        let winnings = Math.floor(currentBet * 2.5); // Выплата 3:2 (ставка + 1.5 ставки)
+        userBalance += winnings;
+        updateBalanceUI();
         endGame('Блекджек! Автоматическая победа!');
         return;
     }
@@ -132,13 +162,20 @@ function playerStand() {
     }
     
     let playerScore = calculateScore(playerHand);
-    updateBoard(true); // Сначала открываем карты дилера, потом выводим результат
+    updateBoard(true); // Сначала показываем карты дилера
     
+    const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
+    let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
+
     if (dealerScore > 21 || playerScore > dealerScore) {
+        userBalance += currentBet * 2; // Возврат ставки + выигрыш 1:1
+        updateBalanceUI();
         endGame('Победа!');
     } else if (playerScore < dealerScore) {
         endGame('Дилер выиграл.');
     } else {
+        userBalance += currentBet; // Возврат ставки при ничьей
+        updateBalanceUI();
         endGame('Ничья.');
     }
 }
@@ -155,7 +192,9 @@ function calculateScore(hand) {
 
 function renderCards(hand, containerId, hideFirst = false) {
     const container = document.getElementById(containerId);
+    if (!container) return;
     container.innerHTML = '';
+    
     hand.forEach((card, index) => {
         const img = document.createElement('img');
         img.className = 'bj-card';
@@ -175,13 +214,26 @@ function updateBoard(revealDealer = false) {
     renderCards(playerHand, 'player-cards');
     renderCards(dealerHand, 'dealer-cards', !revealDealer);
     
-    document.getElementById('player-score').innerText = calculateScore(playerHand);
-    document.getElementById('dealer-score').innerText = revealDealer ? calculateScore(dealerHand) : '—';
+    const playerScoreEl = document.getElementById('player-score');
+    const dealerScoreEl = document.getElementById('dealer-score');
+
+    if (playerScoreEl) playerScoreEl.innerText = calculateScore(playerHand);
+    if (dealerScoreEl) dealerScoreEl.innerText = revealDealer ? calculateScore(dealerHand) : '—';
 }
 
 function endGame(message) {
-    document.getElementById('bj-message').innerText = message;
-    document.getElementById('btn-deal').disabled = false;
-    document.getElementById('btn-hit').disabled = true;
-    document.getElementById('btn-stand').disabled = true;
+    const msgEl = document.getElementById('bj-message');
+    const dealBtn = document.getElementById('btn-deal');
+    const hitBtn = document.getElementById('btn-hit');
+    const standBtn = document.getElementById('btn-stand');
+
+    if (msgEl) msgEl.innerText = message;
+    if (dealBtn) dealBtn.disabled = false;
+    if (hitBtn) hitBtn.disabled = true;
+    if (standBtn) standBtn.disabled = true;
 }
+
+// Вызовите updateBalanceUI() при загрузке страницы, чтобы отобразить начальные 8000
+document.addEventListener('DOMContentLoaded', () => {
+    updateBalanceUI();
+});
