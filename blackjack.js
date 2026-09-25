@@ -67,28 +67,45 @@ const cardImages = {
 let deck = [];
 let playerHand = [];
 let dealerHand = [];
-let userBalance = 8000; // Стартовый баланс
+let currentBet = 100; // Текущая ставка
 
-// Функция синхронизации баланса с сервером Render
-async function syncBalanceWithServer(newBalance) {
-    const gameId = localStorage.getItem('game_id') || 'ID-0001'; 
-    try {
-        let response = await fetch(`https://lilitgame.onrender.com/api/user/update-score?game_id=${gameId}&new_score=${newBalance}`, {
-            method: 'POST'
-        });
-        let data = await response.json();
-        if (data.status === 'ok') {
-            console.log('Баланс успешно сохранен в базе данных:', data.score);
-        }
-    } catch (e) {
-        console.error('Ошибка при синхронизации баланса с сервером:', e);
+// Управление ставками кнопками
+function changeBet(amount) {
+    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    let newBet = currentBet + amount;
+
+    if (newBet > maxBalance) {
+        newBet = maxBalance > 0 ? maxBalance : 0;
+    }
+    if (newBet < 50 && maxBalance >= 50) {
+        newBet = 50;
+    } else if (maxBalance < 50) {
+        newBet = maxBalance;
+    }
+
+    currentBet = newBet;
+    updateBetUI();
+}
+
+function resetBet() {
+    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    currentBet = maxBalance >= 100 ? 100 : maxBalance;
+    updateBetUI();
+}
+
+function updateBetUI() {
+    const betEl = document.getElementById('current-bet');
+    if (betEl) {
+        betEl.innerText = currentBet;
     }
 }
 
 function updateBalanceUI() {
-    const balanceEl = document.getElementById('user-balance') || document.querySelector('.bj-top-bar .balance-val');
-    if (balanceEl) {
-        balanceEl.innerText = userBalance;
+    // Баланс синхронизируется через глобальную функцию updateScore из index.html,
+    // но если нужно продублировать локально:
+    const balanceEl = document.getElementById('bj-balance-value');
+    if (balanceEl && typeof currentUserData !== 'undefined') {
+        balanceEl.innerText = currentUserData.score;
     }
 }
 
@@ -103,7 +120,6 @@ function createDeck() {
         }
     }
     
-    // Алгоритм Фишера — Йетса
     for (let i = newDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -119,22 +135,25 @@ function getCardWeight(val) {
 }
 
 function startBlackjack() {
-    const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
-    let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
+    let currentScore = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
 
     if (currentBet <= 0) {
         document.getElementById('bj-message').innerText = 'Введите корректную ставку!';
         return;
     }
-    if (userBalance < currentBet) {
+    if (currentScore < currentBet) {
         document.getElementById('bj-message').innerText = 'Недостаточно средств!';
         return;
     }
 
-    // Списываем ставку
-    userBalance -= currentBet;
-    updateBalanceUI();
-    syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
+    // Списываем ставку через общую функцию обновления счета (обновляет интерфейс и шлет на сервер)
+    let newScore = currentScore - currentBet;
+    if (typeof updateScore === 'function') {
+        updateScore(newScore);
+    } else {
+        currentUserData.score = newScore;
+        updateBalanceUI();
+    }
 
     deck = createDeck();
     playerHand = [deck.pop(), deck.pop()];
@@ -145,9 +164,13 @@ function startBlackjack() {
     if (calculateScore(playerHand) === 21) {
         updateBoard(true);
         let winnings = Math.floor(currentBet * 2.5);
-        userBalance += winnings;
-        updateBalanceUI();
-        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
+        let finalScore = currentUserData.score + winnings;
+        if (typeof updateScore === 'function') {
+            updateScore(finalScore);
+        } else {
+            currentUserData.score = finalScore;
+            updateBalanceUI();
+        }
         endGame('Блекджек! Автоматическая победа!');
         return;
     }
@@ -178,20 +201,28 @@ function playerStand() {
     let playerScore = calculateScore(playerHand);
     updateBoard(true);
     
-    const betInput = document.getElementById('bj-bet-input') || document.querySelector('.bj-bet-input');
-    let currentBet = betInput ? parseInt(betInput.value) || 0 : 100;
+    let currentScore = typeof currentUserData !== 'undefined' ? currentUserData.score : 0;
 
     if (dealerScore > 21 || playerScore > dealerScore) {
-        userBalance += currentBet * 2;
-        updateBalanceUI();
-        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
+        let winnings = currentBet * 2;
+        let finalScore = currentScore + winnings;
+        if (typeof updateScore === 'function') {
+            updateScore(finalScore);
+        } else {
+            currentUserData.score = finalScore;
+            updateBalanceUI();
+        }
         endGame('Победа!');
     } else if (playerScore < dealerScore) {
         endGame('Дилер выиграл.');
     } else {
-        userBalance += currentBet;
-        updateBalanceUI();
-        syncBalanceWithServer(userBalance); // <--- Отправляем на сервер
+        let finalScore = currentScore + currentBet; // Возврат ставки при ничьей
+        if (typeof updateScore === 'function') {
+            updateScore(finalScore);
+        } else {
+            currentUserData.score = finalScore;
+            updateBalanceUI();
+        }
         endGame('Ничья.');
     }
 }
@@ -247,8 +278,16 @@ function endGame(message) {
     if (dealBtn) dealBtn.disabled = false;
     if (hitBtn) hitBtn.disabled = true;
     if (standBtn) standBtn.disabled = true;
+
+    // Проверяем ставку, чтобы она не превышала оставшийся баланс после игры
+    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    if (currentBet > maxBalance) {
+        currentBet = maxBalance > 0 ? maxBalance : 0;
+        updateBetUI();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    updateBetUI();
     updateBalanceUI();
 });
