@@ -1,138 +1,243 @@
-/* Базовые сбросы и размеры экранов */
-body {
-    background-color: #060608;
-    color: #ffffff;
-    font-family: 'Lexend', sans-serif;
-    margin: 0;
-    padding: 16px;
+/* Глобальные настройки для нормальной ширины экрана */
+* {
     box-sizing: border-box;
 }
 
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Экраны приложения */
 .screen {
     display: none;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .screen.active {
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Контейнеры меню и элементов на всю ширину */
-.menu-container {
+/* Главное меню и блоки на всю ширину (как на старом дизайне) */
+.menu-container, 
+#games-screen, 
+#profile-screen, 
+#friends-screen, 
+#main-menu {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    width: 100%;
-    box-sizing: border-box;
 }
 
-.menu-card {
-    background: #111116;
-    border: 1px solid rgba(255, 42, 117, 0.25);
+/* Карточки меню и кнопок на всю ширину с рамками */
+.menu-card, 
+.game-card, 
+.menu-btn {
+    width: 100%;
+    background: #0a0a0e;
+    border: 1px solid rgba(255, 42, 117, 0.3);
     border-radius: 16px;
-    padding: 16px 20px;
+    padding: 18px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    width: 100%;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-    box-shadow: 0 0 10px rgba(255, 42, 117, 0.08);
+    text-decoration: none;
+    box-shadow: 0 0 15px rgba(255, 42, 117, 0.05);
 }
 
 .menu-card:active {
-    transform: scale(0.98);
-    border-color: rgba(255, 42, 117, 0.6);
+    border-color: rgba(255, 42, 117, 0.8);
+    background: #121218;
 }
 
-/* Стили под старый блекджек, чтобы ничего не ломалось */
-.game-screen-bj {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.bj-table-section {
-    background: #111116;
-    border: 1px solid rgba(0, 210, 255, 0.3);
-    border-radius: 16px;
-    padding: 14px;
-    width: 100%;
-    margin-bottom: 12px;
-    box-sizing: border-box;
-    box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
-}
-
-.bj-table-header {
+/* Верхняя панель (Логотип и баланс) */
+.top-bar, .header-container {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    color: #00d2ff;
-    font-weight: 600;
-    margin-bottom: 8px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
-.card-container {
+/* Большой логотип-блок в центре меню */
+.logo-box {
+    width: 100%;
+    border: 1px solid rgba(255, 42, 117, 0.4);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(255, 42, 117, 0.03);
+    box-shadow: 0 0 20px rgba(255, 42, 117, 0.1);
+}
+
+/* --- Стили для экрана Блекджека во всю ширину --- */
+#blackjack-screen {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+}
+
+#blackjack-screen.active {
     display: flex;
-    gap: 6px;
-    min-height: 100px;
-    justify-content: center;
+}
+
+.bj-top-bar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.bj-back-btn {
+    background: #0a0a0e;
+    border: 1px solid rgba(255, 42, 117, 0.3);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.bj-title {
+    flex: 1;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 42, 117, 0.6);
+    margin-right: 50px;
+}
+
+/* Игровые зоны дилера и игрока на всю ширину */
+.bj-zone {
+    width: 100%;
+    background: #0a0a0e;
+    border: 1px solid rgba(0, 210, 255, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.05);
+}
+
+.bj-zone-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #00d2ff;
+    margin-bottom: 12px;
+}
+
+.bj-score-badge {
+    background: rgba(0, 210, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 210, 255, 0.3);
+}
+
+.bj-cards-flex {
+    display: flex;
+    gap: 8px;
+    min-height: 90px;
     align-items: center;
     overflow-x: auto;
     width: 100%;
 }
 
-.bj-card {
-    width: 65px;
-    height: 92px;
+.bj-cards-flex img {
+    width: 60px;
+    height: 85px;
     border-radius: 8px;
     object-fit: cover;
-    box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    flex-shrink: 0;
 }
 
-.game-message {
+.bj-status-msg {
+    width: 100%;
     text-align: center;
     color: #ff2a75;
     font-weight: 600;
     font-size: 0.95rem;
-    margin: 10px 0;
-    min-height: 24px;
-    text-shadow: 0 0 8px rgba(255, 42, 117, 0.4);
-}
-
-.bj-controls {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.neon-btn {
-    flex: 1;
-    background: linear-gradient(135deg, #00ffaa, #00d2ff);
-    color: #000000;
-    border: none;
-    padding: 12px;
+    padding: 10px;
+    background: rgba(255, 42, 117, 0.05);
     border-radius: 12px;
-    font-family: 'Lexend', sans-serif;
+    border: 1px dashed rgba(255, 42, 117, 0.3);
+}
+
+/* Панель управления внизу */
+.bj-control-panel {
+    width: 100%;
+    background: #0a0a0e;
+    border: 1px solid rgba(255, 42, 117, 0.3);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bj-bet-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #cccccc;
+}
+
+.bj-bet-input {
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #ffffff;
+    padding: 8px 12px;
+    width: 110px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.bj-buttons-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.bj-action-btn {
+    flex: 1;
+    background: #14141c;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 14px 8px;
+    border-radius: 12px;
     font-weight: 700;
     font-size: 0.9rem;
-    box-shadow: 0 0 12px rgba(0, 255, 170, 0.3);
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
-.neon-btn:active {
-    transform: scale(0.95);
+.bj-action-btn.primary {
+    background: linear-gradient(135deg, #ff2a75, #ff5e9c);
+    border: none;
+    box-shadow: 0 0 15px rgba(255, 42, 117, 0.4);
 }
 
-.neon-btn:disabled {
-    background: #1a1a24;
-    color: #555566;
-    box-shadow: none;
+.bj-action-btn:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
 }
