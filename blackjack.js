@@ -78,7 +78,14 @@ function createDeck() {
             newDeck.push({ suit, val, weight: getCardWeight(val) });
         }
     }
-    return newDeck.sort(() => Math.random() - 0.5);
+    
+    // Честный алгоритм перемешивания (Фишер-Йетс) вместо sort(() => Math.random() - 0.5)
+    for (let i = newDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+    }
+    
+    return newDeck;
 }
 
 function getCardWeight(val) {
@@ -94,6 +101,13 @@ function startBlackjack() {
 
     updateBoard();
     
+    // Проверка на мгновенный блекджек у игрока
+    if (calculateScore(playerHand) === 21) {
+        updateBoard(true);
+        endGame('Блекджек! Автоматическая победа!');
+        return;
+    }
+
     document.getElementById('btn-deal').disabled = true;
     document.getElementById('btn-hit').disabled = false;
     document.getElementById('btn-stand').disabled = false;
@@ -118,6 +132,8 @@ function playerStand() {
     }
     
     let playerScore = calculateScore(playerHand);
+    updateBoard(true); // Сначала открываем карты дилера, потом выводим результат
+    
     if (dealerScore > 21 || playerScore > dealerScore) {
         endGame('Победа!');
     } else if (playerScore < dealerScore) {
@@ -125,7 +141,6 @@ function playerStand() {
     } else {
         endGame('Ничья.');
     }
-    updateBoard(true);
 }
 
 function calculateScore(hand) {
