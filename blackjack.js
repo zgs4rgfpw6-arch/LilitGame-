@@ -67,20 +67,23 @@ const cardImages = {
 let deck = [];
 let playerHand = [];
 let dealerHand = [];
-let currentBet = 100; // Текущая ставка
+let currentBet = 100;
 
-// Управление ставками кнопками
+// Управление ставками
 function changeBet(amount) {
-    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    let maxBalance = (typeof currentUserData !== 'undefined' && currentUserData.score !== undefined) ? currentUserData.score : 8000;
+    
+    // Если нажимаем +50, +100, +500 — прибавляем к текущей ставке
     let newBet = currentBet + amount;
 
+    // Если ставка превышает баланс, сбрасываем до баланса
     if (newBet > maxBalance) {
         newBet = maxBalance > 0 ? maxBalance : 0;
     }
-    if (newBet < 50 && maxBalance >= 50) {
-        newBet = 50;
-    } else if (maxBalance < 50) {
-        newBet = maxBalance;
+
+    // Если баланс упал ниже 50
+    if (newBet <= 0 && maxBalance > 0) {
+        newBet = Math.min(50, maxBalance);
     }
 
     currentBet = newBet;
@@ -88,7 +91,7 @@ function changeBet(amount) {
 }
 
 function resetBet() {
-    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    let maxBalance = (typeof currentUserData !== 'undefined' && currentUserData.score !== undefined) ? currentUserData.score : 8000;
     currentBet = maxBalance >= 100 ? 100 : maxBalance;
     updateBetUI();
 }
@@ -101,8 +104,6 @@ function updateBetUI() {
 }
 
 function updateBalanceUI() {
-    // Баланс синхронизируется через глобальную функцию updateScore из index.html,
-    // но если нужно продублировать локально:
     const balanceEl = document.getElementById('bj-balance-value');
     if (balanceEl && typeof currentUserData !== 'undefined') {
         balanceEl.innerText = currentUserData.score;
@@ -135,7 +136,7 @@ function getCardWeight(val) {
 }
 
 function startBlackjack() {
-    let currentScore = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    let currentScore = (typeof currentUserData !== 'undefined' && currentUserData.score !== undefined) ? currentUserData.score : 8000;
 
     if (currentBet <= 0) {
         document.getElementById('bj-message').innerText = 'Введите корректную ставку!';
@@ -146,7 +147,7 @@ function startBlackjack() {
         return;
     }
 
-    // Списываем ставку через общую функцию обновления счета (обновляет интерфейс и шлет на сервер)
+    // Списываем ставку
     let newScore = currentScore - currentBet;
     if (typeof updateScore === 'function') {
         updateScore(newScore);
@@ -201,7 +202,7 @@ function playerStand() {
     let playerScore = calculateScore(playerHand);
     updateBoard(true);
     
-    let currentScore = typeof currentUserData !== 'undefined' ? currentUserData.score : 0;
+    let currentScore = (typeof currentUserData !== 'undefined' && currentUserData.score !== undefined) ? currentUserData.score : 0;
 
     if (dealerScore > 21 || playerScore > dealerScore) {
         let winnings = currentBet * 2;
@@ -266,6 +267,8 @@ function updateBoard(revealDealer = false) {
 
     if (playerScoreEl) playerScoreEl.innerText = calculateScore(playerHand);
     if (dealerScoreEl) dealerScoreEl.innerText = revealDealer ? calculateScore(dealerHand) : '—';
+    
+    updateBalanceUI();
 }
 
 function endGame(message) {
@@ -279,15 +282,31 @@ function endGame(message) {
     if (hitBtn) hitBtn.disabled = true;
     if (standBtn) standBtn.disabled = true;
 
-    // Проверяем ставку, чтобы она не превышала оставшийся баланс после игры
-    let maxBalance = typeof currentUserData !== 'undefined' ? currentUserData.score : 8000;
+    let maxBalance = (typeof currentUserData !== 'undefined' && currentUserData.score !== undefined) ? currentUserData.score : 8000;
     if (currentBet > maxBalance) {
         currentBet = maxBalance > 0 ? maxBalance : 0;
         updateBetUI();
     }
+    updateBalanceUI();
 }
 
+// Автоматическая привязка кнопок ставок к функциям при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     updateBetUI();
     updateBalanceUI();
+
+    // Находим кнопки по тексту внутри них и вешаем события клика
+    const betButtons = document.querySelectorAll('.bj-bet-btn');
+    betButtons.forEach(btn => {
+        const text = btn.innerText.trim();
+        if (text === '+50') {
+            btn.onclick = () => changeBet(50);
+        } else if (text === '+100') {
+            btn.onclick = () => changeBet(100);
+        } else if (text === '+500') {
+            btn.onclick = () => changeBet(500);
+        } else if (text === 'Сброс') {
+            btn.onclick = () => resetBet();
+        }
+    });
 });
