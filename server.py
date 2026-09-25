@@ -351,7 +351,6 @@ class DurakTable:
     def start_game(self):
         suits = ['♠', '♣', '♥', '♦']
         
-        # Выбираем ранги в зависимости от выбранного размера колоды
         if self.deck_size == 24:
             ranks = ['9', '10', 'J', 'Q', 'K', 'A']
         elif self.deck_size == 52:
@@ -391,10 +390,10 @@ def get_durak_tables():
     for t_id, table in DURAK_TABLES.items():
         if table.status == "waiting":
             open_tables.append({
-                "id": table.table_id,
-                "creator_name": table.players[0]["name"],
+                "table_id": table.table_id,
+                "host_name": table.players[0]["name"],
                 "max_players": table.max_players,
-                "current_players": len(table.players),
+                "players_count": len(table.players),
                 "bet": table.bet,
                 "deck_size": table.deck_size
             })
@@ -458,10 +457,17 @@ def get_durak_state(table_id: str = Query(...), game_id: str = Query(...)):
     opponents = [{"name": p["name"], "cards_count": len(p["cards"])} for p in table.players if p["id"] != game_id]
     
     is_my_turn = False
+    is_attacker = False
     if table.status == "playing" and player_data:
         current_idx = table.players.index(player_data)
-        if current_idx == table.attacker_index or current_idx == table.defender_index:
+        if current_idx == table.attacker_index:
             is_my_turn = True
+            is_attacker = True
+        elif current_idx == table.defender_index:
+            is_my_turn = True
+            is_attacker = False
+
+    status_msg = "Ожидание второго игрока..." if table.status == "waiting" else ("Ваш ход (Атака)" if is_attacker else "Ваш ход (Защита)")
 
     return {
         "status": table.status,
@@ -472,12 +478,14 @@ def get_durak_state(table_id: str = Query(...), game_id: str = Query(...)):
         "trump_card": table.trump_card,
         "deck_count": len(table.deck),
         "table_cards": table.table_cards,
-        "is_my_turn": is_my_turn
+        "is_my_turn": is_my_turn,
+        "is_attacker": is_attacker,
+        "status_message": status_msg
     }
 
 
 @app.post("/api/durak/action")
-def durak_action(table_id: str = Query(...), game_id: str = Query(...), action_type: str = Query(...), card_rank: str = Query(None), card_suit: str = Query(None)):
+def durak_action(table_id: str = Query(...), game_id: str = Query(...), card_index: int = Query(None), action_type: str = Query(None)):
     if table_id not in DURAK_TABLES:
         raise HTTPException(status_code=404, detail="Стол не найден")
     
@@ -511,29 +519,22 @@ def durak_action(table_id: str = Query(...), game_id: str = Query(...), action_t
         table.defender_index = (table.attacker_index + 1) % len(table.players)
         return {"status": "ok", "message": "Карты взяты"}
 
-    if not card_rank or not card_suit:
-        raise HTTPException(status_code=400, detail="Не указана карта для хода")
+    if card_index is None or card_index < 0 or card_index >= len(player["cards"]):
+        raise HTTPException(status_code=400, detail="Неверный индекс карты")
 
-    target_card = next((c for c in player["cards"] if c["rank"] == card_rank and c["suit"] == card_suit), None)
-    if not target_card:
-        raise HTTPException(status_code=400, detail="У вас нет такой карты")
+    target_card = player["cards"][card_index]
 
-    if action_type == "attack":
-        if p_index != table.attacker_index:
-            raise HTTPException(status_code=400, detail="Сейчас не ваша очередь атаковать")
+    if p_index == table.attacker_index:
         if len(table.table_cards) > 0:
-            matching = any(c["rank"] == card_rank for pair in table.table_cards for c in [pair["attack"], pair.get("defense")] if c)
+            matching = any(c["rank"] == target_card["rank"] for pair in table.table_cards for c in [pair["attack"], pair.get("defense")] if c)
             if not matching:
                 raise HTTPException(status_code=400, detail="Нельзя подкидывать карту такого достоинства")
         
-        player["cards"].remove(target_card)
+        player["cards"].pop(card_index)
         table.table_cards.append({"attack": target_card, "defense": None})
         return {"status": "ok", "action": "attack"}
 
-    if action_type == "defend":
-        if p_index != table.defender_index:
-            raise HTTPException(status_code=400, detail="Сейчас не ваша очередь защищаться")
-        
+    elif p_index == table.defender_index:
         open_pair = next((p for p in table.table_cards if not p.get("defense")), None)
         if not open_pair:
             raise HTTPException(status_code=400, detail="Нет карт для защиты")
@@ -550,8 +551,8 @@ def durak_action(table_id: str = Query(...), game_id: str = Query(...), action_t
         if not can_beat:
             raise HTTPException(status_code=400, detail="Этой картой нельзя побить")
 
-        player["cards"].remove(target_card)
+        player["cards"].pop(card_index)
         open_pair["defense"] = target_card
         return {"status": "ok", "action": "defend"}
 
-    raise HTTPException(status_code=400, detail="Неизвестное действие")
+    raise HTTPException(status_code=400, detail="Сейчас не ваш ход")
