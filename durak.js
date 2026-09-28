@@ -1,4 +1,4 @@
-// Клиентская логика для игры "Дурак" под интерфейс LILIT CASINO
+// --- LILIT CASINO: DURAK CLIENT LOGIC (DRAG-AND-DROP) ---
 
 if (typeof window.durakTableId === 'undefined') {
     window.durakTableId = null;
@@ -7,7 +7,7 @@ if (typeof window.durakTableId === 'undefined') {
     window.lastRenderedState = "";
 }
 
-// Уникальное имя словаря картинок для исключения конфликтов
+// Словарь картинок карт (ваши ссылки с Postimage)
 const durakCardImages = {
     'spades_2': 'https://i.postimg.cc/4YC4LJj8/2ka-pik.jpg',
     'spades_3': 'https://i.postimg.cc/dhMQHqgB/3ka-pik.jpg',
@@ -77,106 +77,11 @@ function getDurakCardImageKey(card) {
     return `${suit}_${rank}`;
 }
 
-// Загрузка списка столов в лобби
-async function loadDurakTables() {
-    const container = document.getElementById("durak-tables-container");
-    if (!container) return;
-
-    container.innerHTML = `<div class="empty-text">Загрузка столов...</div>`;
-
-    try {
-        const response = await fetch(`${API_URL}/api/durak/tables?game_id=${currentUserData.game_id}`);
-        const tables = await response.json();
-
-        if (!tables || tables.length === 0) {
-            container.innerHTML = `<div class="empty-text">Нет активных столов. Создайте свой!</div>`;
-            return;
-        }
-
-        container.innerHTML = tables.map(table => `
-            <div class="table-card">
-                <div class="table-info">
-                    <div class="table-name">Стол #${table.table_id.slice(-4)} (${table.host_name})</div>
-                    <div class="table-meta">Ставка: ${table.bet} 💳 | Игроков: ${table.players_count}/${table.max_players}</div>
-                </div>
-                <button class="mini-btn" onclick="joinDurakTable('${table.table_id}')">Войти</button>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error("Ошибка загрузки столов:", error);
-        container.innerHTML = `<div class="empty-text" style="color: #ff2a75;">Ошибка загрузки столов</div>`;
-    }
-}
-
-// Создание стола
-async function createDurakTable() {
-    const playersCount = document.getElementById("durak-players-count").value;
-    const betAmount = document.getElementById("durak-bet-amount").value;
-
-    if (currentUserData.score < parseInt(betAmount)) {
-        alert("Недостаточно средств для ставки!");
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/api/durak/create?game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}&max_players=${playersCount}&bet=${betAmount}&deck_size=36`, {
-            method: "POST"
-        });
-        const data = await response.json();
-
-        if (response.ok && data.table_id) {
-            durakTableId = data.table_id;
-            selectedDurakCard = null;
-            lastRenderedState = "";
-            switchScreen('screen-durak-game');
-            startDurakPolling();
-        } else {
-            alert(data.detail || "Не удалось создать стол");
-        }
-    } catch (error) {
-        console.error("Ошибка создания стола:", error);
-        alert("Ошибка соединения с сервером");
-    }
-}
-
-// Вход в существующий стол
-async function joinDurakTable(tableId) {
-    try {
-        const response = await fetch(`${API_URL}/api/durak/join?table_id=${tableId}&game_id=${currentUserData.game_id}&name=${encodeURIComponent(currentUserData.name)}`, {
-            method: "POST"
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-            durakTableId = tableId;
-            selectedDurakCard = null;
-            lastRenderedState = "";
-            switchScreen('screen-durak-game');
-            startDurakPolling();
-        } else {
-            alert(data.detail || "Не удалось войти в игру");
-        }
-    } catch (error) {
-        console.error("Ошибка входа в стол:", error);
-        alert("Ошибка соединения с сервером");
-    }
-}
-
-// Выход из игры
-function leaveDurakGame() {
-    stopDurakPolling();
-    durakTableId = null;
-    selectedDurakCard = null;
-    lastRenderedState = "";
-    switchScreen('screen-durak-lobby');
-    loadDurakTables();
-}
-
-// Запуск пуллинга
+// Запуск опроса сервера (поллинг)
 function startDurakPolling() {
     if (durakPollInterval) clearInterval(durakPollInterval);
     updateDurakState();
-    durakPollInterval = setInterval(updateDurakState, 2500);
+    durakPollInterval = setInterval(updateDurakState, 2000);
 }
 
 function stopDurakPolling() {
@@ -186,7 +91,7 @@ function stopDurakPolling() {
     }
 }
 
-// Получение состояния игры с сервера
+// Получение актуального состояния стола
 async function updateDurakState() {
     if (!durakTableId) return;
 
@@ -194,7 +99,6 @@ async function updateDurakState() {
         const response = await fetch(`${API_URL}/api/durak/state?table_id=${durakTableId}&game_id=${currentUserData.game_id}`);
         if (!response.ok) return;
         const state = await response.json();
-
         renderDurakGame(state);
     } catch (error) {
         console.error("Ошибка обновления состояния игры:", error);
@@ -217,11 +121,11 @@ function renderDurakGame(state) {
     if (stateString === lastRenderedState) return;
     lastRenderedState = stateString;
 
-    // Счётчик колоды
+    // Колода
     const deckCountEl = document.getElementById("durak-deck-count");
     if (deckCountEl) deckCountEl.textContent = state.deck_count;
     
-    // Козырная карта
+    // Козырь
     const trumpEl = document.getElementById("durak-trump-card");
     if (trumpEl && state.trump_card) {
         const imgKey = getDurakCardImageKey(state.trump_card);
@@ -229,21 +133,20 @@ function renderDurakGame(state) {
         trumpEl.innerHTML = `<img src="${imgUrl}" alt="Trump" style="width: 45px; height: 65px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">`;
     }
 
-    // Сообщение / статус хода
+    // Сообщение / Статус
     const msgEl = document.getElementById("durak-message");
     if (msgEl) {
         const isMyTurn = state.is_my_turn;
-        msgEl.textContent = state.status_message || (isMyTurn ? "Ваш ход (Атака)" : "Ход противника...");
+        msgEl.textContent = state.status_message || (isMyTurn ? (state.is_attacker ? "Ваш ход (Атака)" : "Ваш ход (Защита)") : "Ход противника...");
         msgEl.style.cssText = `
             font-weight: 700; font-size: 0.9rem; text-align: center; padding: 6px 14px;
             background: ${isMyTurn ? 'rgba(255, 42, 117, 0.15)' : 'rgba(255, 255, 255, 0.05)'};
             border: 1px solid ${isMyTurn ? 'rgba(255, 42, 117, 0.4)' : 'rgba(255, 255, 255, 0.1)'};
             border-radius: 20px; color: ${isMyTurn ? '#ff2a75' : '#a0a0b0'};
-            box-shadow: ${isMyTurn ? '0 0 12px rgba(255, 42, 117, 0.3)' : 'none'};
         `;
     }
 
-    // Противники
+    // Противник
     const enemyNameEl = document.getElementById("durak-enemy-name");
     const enemyCountEl = document.getElementById("durak-enemy-count");
     const enemyCardsContainer = document.getElementById("durak-enemy-cards");
@@ -253,20 +156,17 @@ function renderDurakGame(state) {
         const opp = state.opponents[0];
         if (enemyNameEl) enemyNameEl.textContent = opp.name.toUpperCase();
         if (enemyCountEl) enemyCountEl.textContent = opp.cards_count;
-        
         if (enemyAvatarEl && opp.avatar) {
             enemyAvatarEl.innerHTML = `<img src="${opp.avatar}" alt="" style="width: 100%; height: 100%; object-fit: cover;">`;
         }
-        
         if (enemyCardsContainer) {
             enemyCardsContainer.innerHTML = Array(opp.cards_count).fill(`
                 <img src="${durakCardImages['card_back']}" style="width: 38px; height: 55px; object-fit: cover; border-radius: 4px; margin-left: -18px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
             `).join('');
-            enemyCardsContainer.style.cssText = "display: flex; justify-content: center; padding-left: 18px;";
         }
     }
 
-    // Карты на столе
+    // Карты на столе (пары атака-защита)
     const tableCardsContainer = document.getElementById("durak-table-cards");
     if (tableCardsContainer) {
         tableCardsContainer.innerHTML = "";
@@ -277,21 +177,25 @@ function renderDurakGame(state) {
         `;
 
         if (state.table_cards && state.table_cards.length > 0) {
-            state.table_cards.forEach(pair => {
+            state.table_cards.forEach((pair, pairIndex) => {
                 const pairDiv = document.createElement("div");
+                pairDiv.className = "durak-table-pair";
+                pairDiv.dataset.pairIndex = pairIndex;
                 pairDiv.style.cssText = "display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 12px;";
 
+                // Карта атаки
                 const attKey = getDurakCardImageKey(pair.attack);
                 const attUrl = durakCardImages[attKey] || durakCardImages['card_back'];
                 pairDiv.innerHTML += `<img src="${attUrl}" style="width: 62px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">`;
 
+                // Карта защиты (или пустой слот для отбивания перетаскиванием)
                 if (pair.defense) {
                     const defKey = getDurakCardImageKey(pair.defense);
                     const defUrl = durakCardImages[defKey] || durakCardImages['card_back'];
                     pairDiv.innerHTML += `<img src="${defUrl}" style="width: 62px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">`;
                 } else {
                     pairDiv.innerHTML += `
-                        <div style="width: 62px; height: 90px; background: rgba(25, 25, 35, 0.6); border: 2px dashed rgba(255, 42, 117, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ff2a75; font-size: 1.2rem;">·</div>
+                        <div class="durak-defend-slot" data-pair-index="${pairIndex}" style="width: 62px; height: 90px; background: rgba(25, 25, 35, 0.6); border: 2px dashed rgba(255, 42, 117, 0.4); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ff2a75; font-size: 1.2rem;">·</div>
                     `;
                 }
                 tableCardsContainer.appendChild(pairDiv);
@@ -317,13 +221,12 @@ function renderDurakGame(state) {
         state.my_cards.forEach((card, index) => {
             const imgKey = getDurakCardImageKey(card);
             const imgUrl = durakCardImages[imgKey] || durakCardImages['card_back'];
-            const isSelected = selectedDurakCard === index;
-
             const angle = totalCards > 1 ? (index - (totalCards - 1) / 2) * 7 : 0;
             const translateY = Math.abs(index - (totalCards - 1) / 2) * 4;
 
             const cardEl = document.createElement("div");
-            cardEl.className = "bj-card";
+            cardEl.className = "durak-hand-card";
+            cardEl.dataset.cardIndex = index;
             cardEl.style.cssText = `
                 position: absolute;
                 width: 68px; 
@@ -335,40 +238,42 @@ function renderDurakGame(state) {
                 box-shadow: 0 4px 15px rgba(0,0,0,0.6);
                 cursor: pointer;
                 transform-origin: bottom center;
-                transform: translateX(${(index - (totalCards - 1) / 2) * 32}px) translateY(${isSelected ? -20 : translateY}px) rotate(${angle}deg);
-                transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
-                z-index: ${isSelected ? 20 : index + 1};
-                border: ${isSelected ? '2px solid #ff2a75' : '1px solid rgba(255,255,255,0.4)'};
+                transform: translateX(${(index - (totalCards - 1) / 2) * 32}px) translateY(${translateY}px) rotate(${angle}deg);
+                z-index: ${index + 1};
+                border: 1px solid rgba(255,255,255,0.4);
+                touch-action: none;
             `;
 
-            cardEl.onclick = () => selectCard(index);
-            setupDurakCardDrag(cardEl, index);
-
+            // Подключаем полноценный Drag-and-Drop (как в Дурак Online)
+            setupDurakDragAndDrop(cardEl, index);
             myCardsContainer.appendChild(cardEl);
         });
     }
 
+    // Управление кнопками под роль (Атака / Защита)
     const actionBtn = document.getElementById("btn-durak-action");
     const takeBtn = document.getElementById("btn-durak-take");
 
     if (actionBtn && takeBtn) {
         actionBtn.disabled = !state.is_my_turn;
         takeBtn.disabled = !state.is_my_turn;
-        actionBtn.textContent = state.is_attacker ? "Бито" : "Побить";
+        
+        if (state.is_attacker) {
+            actionBtn.style.display = "inline-block";
+            actionBtn.textContent = state.table_cards && state.table_cards.length > 0 ? "Бито" : "Пас";
+            takeBtn.style.display = "none";
+        } else {
+            actionBtn.style.display = "none";
+            takeBtn.style.display = "inline-block";
+            takeBtn.textContent = "Беру";
+        }
     }
 }
 
-function selectCard(index) {
-    selectedDurakCard = selectedDurakCard === index ? null : index;
-    if (lastRenderedState) {
-        const parsed = JSON.parse(lastRenderedState);
-        lastRenderedState = "";
-        renderDurakGame({ ...parsed, my_cards: parsed.my, table_cards: parsed.table });
-    }
-}
-
-function setupDurakCardDrag(cardEl, index) {
+// --- НАСТОЯЩИЙ ДРАГ-Н-ДРОП (ДУРАК ONLINE СТИЛЬ) ---
+function setupDurakDragAndDrop(cardEl, cardIndex) {
     let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
     let isDragging = false;
 
     const onStart = (e) => {
@@ -376,7 +281,10 @@ function setupDurakCardDrag(cardEl, index) {
         startX = touch.clientX;
         startY = touch.clientY;
         isDragging = false;
-        selectedDurakCard = index;
+
+        // Поднимаем карточку поверх остальных при начале касания
+        cardEl.style.zIndex = '1000';
+        cardEl.style.transition = 'none';
     };
 
     const onMove = (e) => {
@@ -384,32 +292,61 @@ function setupDurakCardDrag(cardEl, index) {
         const dx = touch.clientX - startX;
         const dy = touch.clientY - startY;
 
-        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
             isDragging = true;
-            cardEl.style.transform = `translate(${dx}px, ${dy}px) scale(1.1) rotate(0deg)`;
-            cardEl.style.zIndex = '100';
+            // Перетаскиваем за пальцем с увеличением
+            cardEl.style.transform = `translate(${dx}px, ${dy}px) scale(1.15) rotate(0deg)`;
         }
     };
 
     const onEnd = (e) => {
-        if (!isDragging) return;
-        
+        if (!isDragging) {
+            // Если просто тапнули без перетаскивания — можно сделать выбор/подъем карты
+            cardEl.style.zIndex = cardIndex + 1;
+            lastRenderedState = "";
+            updateDurakState();
+            return;
+        }
+
         const touch = e.changedTouches ? e.changedTouches[0] : e;
         const tableArea = document.getElementById("durak-table-cards");
-        
+
         if (tableArea) {
-            const rect = tableArea.getBoundingClientRect();
+            const tableRect = tableArea.getBoundingClientRect();
+            
+            // Проверяем, попал ли палец в зону игрового стола
             if (
-                touch.clientX >= rect.left && 
-                touch.clientX <= rect.right && 
-                touch.clientY >= rect.top && 
-                touch.clientY <= rect.bottom
+                touch.clientX >= tableRect.left && 
+                touch.clientX <= tableRect.right && 
+                touch.clientY >= tableRect.top && 
+                touch.clientY <= tableRect.bottom
             ) {
-                durakPlayCard(index);
+                // Ищем, на какую конкретно карту защиты/пару перетащили (если защищаемся)
+                const defendSlots = document.querySelectorAll(".durak-defend-slot");
+                let targetPairIndex = null;
+
+                defendSlots.forEach(slot => {
+                    const rect = slot.getBoundingClientRect();
+                    if (
+                        touch.clientX >= rect.left - 10 && touch.clientX <= rect.right + 10 &&
+                        touch.clientY >= rect.top - 10 && touch.clientY <= rect.bottom + 10
+                    ) {
+                        targetPairIndex = slot.dataset.pairIndex;
+                    }
+                });
+
+                if (targetPairIndex !== null) {
+                    // Отбиваем конкретную карту на столе
+                    durakPlayCard(cardIndex, targetPairIndex);
+                } else {
+                    // Делаем ход в пустую зону стола (атака / подкидывание)
+                    durakPlayCard(cardIndex, null);
+                }
                 return;
             }
         }
 
+        // Если бросили мимо стола — карта плавно возвращается в руку
         lastRenderedState = "";
         updateDurakState();
     };
@@ -423,32 +360,37 @@ function setupDurakCardDrag(cardEl, index) {
     window.addEventListener("mouseup", onEnd);
 }
 
-async function durakPlayCard(cardIndex) {
+// Отправка хода на сервер
+async function durakPlayCard(cardIndex, targetPairIndex = null) {
     try {
-        const response = await fetch(`${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&card_index=${cardIndex}`, {
-            method: "POST"
-        });
+        let url = `${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&card_index=${cardIndex}`;
+        if (targetPairIndex !== null) {
+            url += `&target_pair=${targetPairIndex}`;
+        }
+
+        const response = await fetch(url, { method: "POST" });
         const data = await response.json();
+        
         if (response.ok) {
             selectedDurakCard = null;
             lastRenderedState = "";
             updateDurakState();
         } else {
-            alert(data.detail || "Недопустимый ход");
+            alert(data.detail || "Недопустимый ход по правилам!");
+            lastRenderedState = "";
+            updateDurakState();
         }
     } catch (error) {
         console.error("Ошибка хода:", error);
     }
 }
 
+// Кнопка "Бито" / "Пас"
 async function durakMainAction() {
-    if (selectedDurakCard === null) {
-        sendDurakAction("bito");
-        return;
-    }
-    durakPlayCard(selectedDurakCard);
+    sendDurakAction("bito");
 }
 
+// Кнопка "Беру"
 async function durakTakeCards() {
     sendDurakAction("take");
 }
