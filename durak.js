@@ -3,6 +3,7 @@
 let durakTableId = null;
 let durakPollInterval = null;
 let selectedDurakCard = null;
+let lastRenderedState = ""; // Кэш для предотвращения мигания экрана
 
 // Загрузка списка столов в лобби
 async function loadDurakTables() {
@@ -54,6 +55,7 @@ async function createDurakTable() {
         if (response.ok && data.table_id) {
             durakTableId = data.table_id;
             selectedDurakCard = null;
+            lastRenderedState = "";
             switchScreen('screen-durak-game');
             startDurakPolling();
         } else {
@@ -76,6 +78,7 @@ async function joinDurakTable(tableId) {
         if (response.ok) {
             durakTableId = tableId;
             selectedDurakCard = null;
+            lastRenderedState = "";
             switchScreen('screen-durak-game');
             startDurakPolling();
         } else {
@@ -92,15 +95,16 @@ function leaveDurakGame() {
     stopDurakPolling();
     durakTableId = null;
     selectedDurakCard = null;
+    lastRenderedState = "";
     switchScreen('screen-durak-lobby');
     loadDurakTables();
 }
 
-// Запуск пуллинга (обновления состояния игры)
+// Запуск пуллинга (обновления состояния игры) с интервалом 2.5с для стабильности
 function startDurakPolling() {
     if (durakPollInterval) clearInterval(durakPollInterval);
     updateDurakState();
-    durakPollInterval = setInterval(updateDurakState, 1500);
+    durakPollInterval = setInterval(updateDurakState, 2500);
 }
 
 function stopDurakPolling() {
@@ -125,8 +129,23 @@ async function updateDurakState() {
     }
 }
 
-// Отрисовка игрового процесса
+// Отрисовка игрового процесса с защитой от мерцания
 function renderDurakGame(state) {
+    // Делаем слепок ключевых данных. Если на сервере ничего не изменилось — пропускаем отрисовку!
+    const stateString = JSON.stringify({
+        deck: state.deck_count,
+        trump: state.trump_card,
+        msg: state.status_message,
+        turn: state.is_my_turn,
+        attacker: state.is_attacker,
+        opp: state.opponents,
+        table: state.table_cards,
+        my: state.my_cards
+    });
+
+    if (stateString === lastRenderedState) return;
+    lastRenderedState = stateString;
+
     // Безопасное обновление счетчика колоды
     const deckCountEl = document.getElementById("durak-deck-count");
     if (deckCountEl) deckCountEl.textContent = state.deck_count;
@@ -171,12 +190,7 @@ function renderDurakGame(state) {
         if (state.table_cards && state.table_cards.length > 0) {
             state.table_cards.forEach(pair => {
                 const pairDiv = document.createElement("div");
-                pairDiv.style.display = "flex";
-                pairDiv.style.gap = "4px";
-                pairDiv.style.alignItems = "center";
-                pairDiv.style.background = "rgba(0,0,0,0.2)";
-                pairDiv.style.padding = "4px";
-                pairDiv.style.borderRadius = "8px";
+                pairDiv.style.cssText = "display: flex; gap: 4px; align-items: center; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 8px;";
 
                 const attRed = pair.attack.suit === '♥' || pair.attack.suit === '♦';
                 pairDiv.innerHTML += `<div class="bj-card" style="width: 55px; height: 80px; display: flex; align-items: center; justify-content: center; background: #fff; color: ${attRed ? '#ff2a75' : '#000'}; font-weight: 700; font-size: 0.9rem; border-radius: 6px;">${pair.attack.rank}${pair.attack.suit}</div>`;
@@ -231,11 +245,10 @@ function renderDurakGame(state) {
     }
 }
 
-// Выбор карты в руке (теперь без лишнего запроса к серверу, только локальная подсветка)
+// Выбор карты в руке (локальная подсветка без запросов к серверу)
 function selectCard(index) {
     selectedDurakCard = selectedDurakCard === index ? null : index;
     
-    // Быстрое обновление стилей без перерисовки всего DOM дерева
     const myCardsContainer = document.getElementById("durak-player-cards");
     if (myCardsContainer && myCardsContainer.children) {
         Array.from(myCardsContainer.children).forEach((el, idx) => {
@@ -264,6 +277,7 @@ async function durakMainAction() {
         const data = await response.json();
         if (response.ok) {
             selectedDurakCard = null;
+            lastRenderedState = ""; // Сбрасываем кэш, чтобы сразу отобразить изменения хода
             updateDurakState();
         } else {
             alert(data.detail || "Недопустимый ход");
@@ -286,6 +300,7 @@ async function sendDurakAction(actionType) {
         const data = await response.json();
         if (response.ok) {
             selectedDurakCard = null;
+            lastRenderedState = ""; // Сбрасываем кэш
             updateDurakState();
         } else {
             alert(data.detail || "Действие недоступно");
