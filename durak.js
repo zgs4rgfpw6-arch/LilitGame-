@@ -53,6 +53,7 @@ async function createDurakTable() {
 
         if (response.ok && data.table_id) {
             durakTableId = data.table_id;
+            selectedDurakCard = null;
             switchScreen('screen-durak-game');
             startDurakPolling();
         } else {
@@ -74,6 +75,7 @@ async function joinDurakTable(tableId) {
 
         if (response.ok) {
             durakTableId = tableId;
+            selectedDurakCard = null;
             switchScreen('screen-durak-game');
             startDurakPolling();
         } else {
@@ -89,6 +91,7 @@ async function joinDurakTable(tableId) {
 function leaveDurakGame() {
     stopDurakPolling();
     durakTableId = null;
+    selectedDurakCard = null;
     switchScreen('screen-durak-lobby');
     loadDurakTables();
 }
@@ -228,10 +231,23 @@ function renderDurakGame(state) {
     }
 }
 
-// Выбор карты в руке
+// Выбор карты в руке (теперь без лишнего запроса к серверу, только локальная подсветка)
 function selectCard(index) {
     selectedDurakCard = selectedDurakCard === index ? null : index;
-    updateDurakState();
+    
+    // Быстрое обновление стилей без перерисовки всего DOM дерева
+    const myCardsContainer = document.getElementById("durak-player-cards");
+    if (myCardsContainer && myCardsContainer.children) {
+        Array.from(myCardsContainer.children).forEach((el, idx) => {
+            if (idx === selectedDurakCard) {
+                el.style.transform = 'translateY(-10px)';
+                el.style.boxShadow = '0 0 15px #ff2a75';
+            } else {
+                el.style.transform = 'translateY(0)';
+                el.style.boxShadow = 'none';
+            }
+        });
+    }
 }
 
 // Кнопка главного действия (Атака / Бито / Защита)
@@ -269,7 +285,7 @@ async function sendDurakAction(actionType) {
         });
         const data = await response.json();
         if (response.ok) {
-            selectedDurakCard, selectedDurakCard = null;
+            selectedDurakCard = null;
             updateDurakState();
         } else {
             alert(data.detail || "Действие недоступно");
