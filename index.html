@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LILIT CASINO</title>
     <link rel="stylesheet" href="style_bj.css">
     
@@ -19,8 +19,6 @@
             padding-top: 90px;
             font-family: 'Lexend', sans-serif;
             color: #ffffff;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         .screen {
@@ -227,168 +225,6 @@
             opacity: 0.8;
         }
 
-        .friends-tabs {
-            display: flex;
-            gap: 8px;
-            max-width: 400px;
-            margin: 0 auto 20px auto;
-        }
-
-        .friend-tab {
-            flex: 1;
-            background: #111116;
-            border: 1px solid rgba(255, 42, 117, 0.2);
-            border-radius: 12px;
-            padding: 10px;
-            color: #8c8c99;
-            font-family: 'Lexend', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-        }
-
-        .friend-tab.active {
-            background: rgba(255, 42, 117, 0.15);
-            border-color: rgba(255, 42, 117, 0.6);
-            color: #ffffff;
-            box-shadow: 0 0 10px rgba(255, 42, 117, 0.15);
-        }
-
-        .friends-content-section {
-            display: none;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .friends-content-section.active {
-            display: block;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            flex: 1;
-            background: #111116;
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: #ffffff;
-            font-family: 'Lexend', sans-serif;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .search-input:focus {
-            border-color: rgba(0, 210, 255, 0.8);
-            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, #ff0055, #ff2a75);
-            border: none;
-            border-radius: 12px;
-            color: #ffffff;
-            padding: 0 20px;
-            font-family: 'Lexend', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 12px rgba(255, 0, 85, 0.3);
-        }
-
-        .action-btn:active {
-            transform: scale(0.95);
-        }
-
-        .friend-card {
-            background: #111116;
-            border: 1px solid rgba(255, 42, 117, 0.25);
-            border-radius: 16px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            box-shadow: 0 0 10px rgba(255, 42, 117, 0.05);
-        }
-
-        .friend-card-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .friend-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: #0d0d12;
-            border: 1px solid rgba(255, 42, 117, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            overflow: hidden;
-        }
-
-        .friend-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .friend-name {
-            color: #ffffff;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .friend-id {
-            color: #ff2a75;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .mini-btn {
-            background: rgba(0, 210, 255, 0.15);
-            border: 1px solid rgba(0, 210, 255, 0.4);
-            border-radius: 10px;
-            color: #00d2ff;
-            padding: 6px 12px;
-            font-family: 'Lexend', sans-serif;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .mini-btn:active {
-            transform: scale(0.95);
-        }
-
-        .mini-btn-danger {
-            background: rgba(255, 42, 117, 0.15);
-            border-color: rgba(255, 42, 117, 0.4);
-            color: #ff2a75;
-        }
-
-        .empty-text {
-            color: #8c8c99;
-            text-align: center;
-            font-size: 0.9rem;
-            margin-top: 30px;
-        }
-
-        /* Стили для Блэкджека */
         .game-screen-bj {
             display: flex;
             flex-direction: column;
@@ -426,28 +262,6 @@
             align-items: center;
             perspective: 1000px;
             overflow-x: auto;
-        }
-
-        .bj-card {
-            width: 85px;
-            height: 120px;
-            border-radius: 10px;
-            object-fit: cover;
-            box-shadow: 0 0 12px rgba(0, 255, 170, 0.35);
-            will-change: transform;
-            transform: translateZ(0);
-            animation: cardAppear 0.3s ease-out forwards;
-        }
-
-        @keyframes cardAppear {
-            from {
-                opacity: 0;
-                transform: translateY(-15px) scale(0.9) translateZ(0);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1) translateZ(0);
-            }
         }
 
         .game-message {
@@ -493,7 +307,6 @@
             cursor: not-allowed;
         }
 
-        /* Блок ставок */
         .bj-bet-section {
             background: #111116;
             border: 1px solid rgba(255, 42, 117, 0.3);
@@ -505,11 +318,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .bj-bet-info {
-            font-size: 0.9rem;
-            color: #ffffff;
-            font-weight: 600;
         }
         .bj-bet-chips {
             display: flex;
@@ -525,60 +333,6 @@
             font-size: 0.8rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .bj-bet-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Стили для лобби Дурака */
-        .durak-lobby-container {
-            max-width: 400px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .lobby-action-box {
-            background: #111116;
-            border: 1px solid rgba(255, 42, 117, 0.3);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 0 15px rgba(255, 42, 117, 0.1);
-        }
-        .lobby-action-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #ff2a75;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .lobby-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .lobby-row:last-child {
-            margin-bottom: 0;
-        }
-        .select-input {
-            flex: 1;
-            background: #0d0d12;
-            border: 1px solid rgba(0, 210, 255, 0.3);
-            border-radius: 12px;
-            padding: 10px 14px;
-            color: #ffffff;
-            font-family: 'Lexend', sans-serif;
-            font-size: 0.9rem;
-            outline: none;
-        }
-        .tables-list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -605,7 +359,7 @@
         </div>
 
         <div class="menu-container">
-            <div class="menu-card" onclick="switchScreen('screen-games')">
+            <div class="menu-card" onclick="gameManager.switchScreen('screen-games')">
                 <div class="menu-card-content">
                     <span class="card-icon-pink">♠</span>
                     <span class="card-title">ИГРЫ</span>
@@ -613,23 +367,15 @@
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="switchScreen('screen-friends'); if(typeof loadAllData === 'function') loadAllData();">
+            <div class="menu-card" onclick="gameManager.switchScreen('screen-blackjack')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
-                    <span class="card-title">ДРУЗЬЯ</span>
+                    <span class="card-title">BLACKJACK</span>
                 </div>
                 <span class="arrow-icon">→</span>
             </div>
 
-            <div class="menu-card" onclick="switchScreen('screen-profile')">
-                <div class="menu-card-content">
-                    <span class="card-icon-pink">♦</span>
-                    <span class="card-title">ПРОФИЛЬ</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
-
-            <div class="menu-card" onclick="closeWebApp()">
+            <div class="menu-card" onclick="gameManager.closeApp()">
                 <div class="menu-card-content">
                     <span class="card-icon-mint">♥</span>
                     <span class="card-title">ВЫХОД</span>
@@ -639,150 +385,29 @@
         </div>
     </div>
 
-
     <!-- ЭКРАН 2: ИГРЫ -->
     <div id="screen-games" class="screen">
         <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
+            <button class="back-btn" onclick="gameManager.switchScreen('screen-main')">← Назад</button>
             <h2 class="section-title">Игры</h2>
             <div style="width: 70px;"></div>
         </div>
 
         <div class="menu-container" style="margin-top: 20px;">
-            <div class="menu-card" onclick="switchScreen('screen-durak-lobby'); if(typeof loadDurakTables === 'function') loadDurakTables();">
-                <div class="menu-card-content">
-                    <span class="card-icon-pink">♠</span>
-                    <span class="card-title">ДУРАК</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
-
-            <div class="menu-card" onclick="switchScreen('screen-blackjack')">
+            <div class="menu-card" onclick="gameManager.switchScreen('screen-blackjack')">
                 <div class="menu-card-content">
                     <span class="card-icon-blue">♣</span>
                     <span class="card-title">BLACKJACK</span>
                 </div>
                 <span class="arrow-icon">→</span>
             </div>
-
-            <div class="menu-card" onclick="alert('Скоро: Рулетка')">
-                <div class="menu-card-content">
-                    <span class="card-icon-mint">♥</span>
-                    <span class="card-title">РУЛЕТКА</span>
-                </div>
-                <span class="arrow-icon">→</span>
-            </div>
         </div>
     </div>
-
-
-    <!-- ЭКРАН ЛОББИ ДУРАКА -->
-    <div id="screen-durak-lobby" class="screen">
-        <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
-            <h2 class="section-title" style="font-size: 1.1rem;">Дурак: Лобби</h2>
-            <div class="balance-badge" style="padding: 4px 10px;">
-                <span class="balance-plus" style="font-size: 0.85rem;">+</span>
-                <div class="balance-chip">
-                    <span style="font-size: 0.85rem;">💳</span>
-                    <span class="balance-value" style="font-size: 0.85rem;" id="durak-lobby-balance">0</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="durak-lobby-container">
-            <!-- Блок создания стола -->
-            <div class="lobby-action-box">
-                <div class="lobby-action-title">Создать стол</div>
-                <div class="lobby-row">
-                    <select id="durak-players-count" class="select-input">
-                        <option value="2">2 игрока</option>
-                        <option value="3">3 игрока</option>
-                    </select>
-                    <select id="durak-bet-amount" class="select-input">
-                        <option value="100">Ставка: 100 💳</option>
-                        <option value="500">Ставка: 500 💳</option>
-                        <option value="1000">Ставка: 1000 💳</option>
-                    </select>
-                </div>
-                <button class="neon-btn" style="width: 100%; margin-top: 5px;" onclick="if(typeof createDurakTable === 'function') createDurakTable();">Создать игру</button>
-            </div>
-
-            <!-- Список доступных столов -->
-            <div class="tables-list-header">
-                <span style="font-size: 0.85rem; color: #8c8c99; font-weight: 600; text-transform: uppercase;">Доступные столы</span>
-                <button class="mini-btn" onclick="if(typeof loadDurakTables === 'function') loadDurakTables();">Обновить</button>
-            </div>
-
-            <div id="durak-tables-container">
-                <div class="empty-text">Нет активных столов. Создайте свой!</div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- ЭКРАН ИГРЫ В ДУРАКА -->
-    <div id="screen-durak-game" class="screen">
-        <div class="header-top" style="margin-bottom: 12px;">
-            <button class="back-btn" onclick="if(typeof leaveDurakGame === 'function') leaveDurakGame(); else switchScreen('screen-durak-lobby');">←</button>
-            
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div id="durak-enemy-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #111116; border: 1px solid rgba(255, 42, 117, 0.4); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; overflow: hidden;">👤</div>
-                <div>
-                    <div id="durak-enemy-name" style="font-size: 0.8rem; font-weight: 600; color: #fff;">ПРОТИВНИК</div>
-                    <div style="font-size: 0.7rem; color: #8c8c99;" id="durak-enemy-count-text">Карт: <span id="durak-enemy-count">0</span></div>
-                </div>
-            </div>
-
-            <div class="balance-badge" style="padding: 4px 10px;">
-                <div class="balance-chip">
-                    <span style="font-size: 0.8rem;">💳</span>
-                    <span class="balance-value" style="font-size: 0.85rem;" id="durak-header-score">0</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="game-screen-bj" style="position: relative; min-height: calc(100vh - 130px); justify-content: space-between; padding: 0;">
-            <div style="position: absolute; top: 5px; left: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                <div id="durak-deck-count" style="font-size: 0.75rem; color: #8c8c99;">36</div>
-                <div id="durak-trump-card" style="width: 42px; height: 60px; background: #1a1a24; border: 1px solid rgba(255,42,117,0.3); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #ff2a75;">🃏</div>
-            </div>
-
-            <div id="durak-enemy-cards" class="card-container" style="min-height: 75px; transform: scale(0.8); transform-origin: top center; margin-bottom: -10px;"></div>
-
-            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-                <div id="durak-message" class="game-message" style="font-size: 0.85rem; margin-bottom: 8px;">Ожидание начала игры...</div>
-                <div id="durak-table-cards" class="card-container" style="min-height: 90px; width: 100%; justify-content: center;"></div>
-            </div>
-
-            <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
-                <div id="durak-player-cards" class="card-container" style="min-height: 110px;"></div>
-
-                <div style="display: flex; align-items: center; gap: 10px; background: #111116; border: 1px solid rgba(255, 42, 117, 0.25); border-radius: 16px; padding: 10px 14px;">
-                    <div style="display: flex; gap: 6px; flex: 1;">
-                        <button id="btn-durak-action" class="neon-btn" onclick="if(typeof durakMainAction === 'function') durakMainAction();" style="padding: 10px 8px; border-radius: 10px; font-size: 0.8rem;" disabled>Готов</button>
-                        <button id="btn-durak-take" class="neon-btn" style="background: linear-gradient(135deg, #ff0055, #ff2a75); color: #fff; padding: 10px 8px; border-radius: 10px; font-size: 0.8rem;" onclick="if(typeof durakTakeCards === 'function') durakTakeCards();" disabled>Взять</button>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="text-align: right;">
-                            <div id="durak-my-name" style="font-size: 0.75rem; font-weight: 600; color: #fff;">Вы</div>
-                            <div style="font-size: 0.7rem; color: #00d2ff;" id="durak-my-cards-count">Карт: 0</div>
-                        </div>
-                        <div id="durak-my-avatar-wrapper" style="width: 38px; height: 38px; border-radius: 50%; background: #0d0d12; border: 2px solid #00ffaa; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            <span id="durak-my-avatar-placeholder" style="font-size: 1rem;">👤</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 
     <!-- ЭКРАН БЛЭКДЖЕКА -->
     <div id="screen-blackjack" class="screen">
         <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-games')">← Назад</button>
+            <button class="back-btn" onclick="gameManager.switchScreen('screen-games')">← Назад</button>
             <h2 class="section-title" style="font-size: 1.1rem;">Blackjack</h2>
             <div class="balance-badge" style="padding: 4px 10px;">
                 <span class="balance-plus" style="font-size: 0.85rem;">+</span>
@@ -794,6 +419,7 @@
         </div>
 
         <div class="game-screen-bj">
+            <!-- Зона дилера -->
             <div class="bj-table-section">
                 <div class="bj-table-header">
                     <span>ДИЛЕР</span>
@@ -802,8 +428,10 @@
                 <div id="dealer-cards" class="card-container"></div>
             </div>
 
+            <!-- Сообщение -->
             <div id="bj-message" class="game-message">Сделайте ставку и раздайте карты</div>
 
+            <!-- Зона игрока -->
             <div class="bj-table-section">
                 <div class="bj-table-header">
                     <span>ИГРОК</span>
@@ -812,6 +440,7 @@
                 <div id="player-cards" class="card-container"></div>
             </div>
 
+            <!-- Блок ставки -->
             <div class="bj-bet-section">
                 <div class="bj-bet-info">Ставка: <span id="current-bet">100</span></div>
                 <div class="bj-bet-chips">
@@ -822,80 +451,17 @@
                 </div>
             </div>
 
+            <!-- Кнопки управления игрой -->
             <div class="bj-controls">
                 <button id="btn-deal" class="neon-btn" onclick="if(typeof startBlackjack === 'function') startBlackjack()">Раздать</button>
                 <button id="btn-hit" class="neon-btn" onclick="if(typeof playerHit === 'function') playerHit()" disabled>Ещё</button>
+                <button id="btn-stand" class="neon-btn" style="background: linear-gradient(135deg, #ff0055, #ff2a75); color: #fff;" onclick="if(typeof playerStand === 'function') playerStand()" disabled>Хватит</button>
             </div>
         </div>
     </div>
 
-
-    <!-- ЭКРАН ДРУЗЬЯ -->
-    <div id="screen-friends" class="screen">
-        <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
-            <h2 class="section-title">Друзья</h2>
-            <div style="width: 70px;"></div>
-        </div>
-        <div class="empty-text">Раздел друзей загружается...</div>
-    </div>
-
-    <!-- ЭКРАН ПРОФИЛЬ -->
-    <div id="screen-profile" class="screen">
-        <div class="header-top">
-            <button class="back-btn" onclick="switchScreen('screen-main')">← Назад</button>
-            <h2 class="section-title">Профиль</h2>
-            <div style="width: 70px;"></div>
-        </div>
-        <div class="empty-text">Загрузка профиля...</div>
-    </div>
-
-
-    <!-- БАЗОВЫЕ СКРИПТЫ ДЛЯ СТАБИЛЬНОСТИ -->
-    <script>
-        // Гарантированная функция переключения экранов, которая не упадет
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            const target = document.getElementById(screenId);
-            if (target) {
-                target.classList.add('active');
-            } else {
-                console.error("Экран не найден: " + screenId);
-            }
-        }
-
-        // Выход из WebApp
-        function closeWebApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.close();
-            } else {
-                alert('Выход из приложения');
-            }
-        }
-
-        // Безопасная инициализация Telegram Mini App на телефоне
-        document.addEventListener("DOMContentLoaded", () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.ready();
-                tg.expand(); // Разворачиваем на весь экран телефона
-                
-                // Пример считывания баланса из initData (если сервер передает)
-                try {
-                    const user = tg.initDataUnsafe?.user;
-                    if (user) {
-                        console.log("Пользователь авторизован в Telegram:", user.id);
-                    }
-                } catch(e) {
-                    console.error("Ошибка чтения данных Telegram:", e);
-                }
-            }
-        });
-    </script>
-
-    <!-- Подключение ваших скриптов (durak.js должен лежать рядом) -->
-    <script src="durak.js"></script>
+    <!-- Подключаем скрипты управления -->
+    <script src="gameManager.js"></script>
+    <script src="blackjack.js"></script>
 </body>
 </html>
