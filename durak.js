@@ -1,13 +1,14 @@
 // Клиентская логика для игры "Дурак" под интерфейс LILIT CASINO
 
-let durakTableId = null;
-let durakPollInterval = null;
-let selectedDurakCard = null;
-let lastRenderedState = "";
-let draggedCardIndex = null;
+if (typeof window.durakTableId === 'undefined') {
+    window.durakTableId = null;
+    window.durakPollInterval = null;
+    window.selectedDurakCard = null;
+    window.lastRenderedState = "";
+}
 
-// Полный маппинг всех карт и рубашки с хостинга Postimages
-const cardImages = {
+// Уникальное имя словаря картинок для исключения конфликтов
+const durakCardImages = {
     'spades_2': 'https://i.postimg.cc/4YC4LJj8/2ka-pik.jpg',
     'spades_3': 'https://i.postimg.cc/dhMQHqgB/3ka-pik.jpg',
     'spades_4': 'https://i.postimg.cc/sMFf6VbK/4ka-pik.jpg',
@@ -67,8 +68,7 @@ const cardImages = {
     'card_back': 'https://i.postimg.cc/YjGwJ56X/Rubaxa.png'
 };
 
-// Вспомогательная функция для получения ключа картинки карты
-function getCardImageKey(card) {
+function getDurakCardImageKey(card) {
     const suitMap = { '♠': 'spades', '♣': 'clubs', '♦': 'diamonds', '♥': 'hearts' };
     const rankMap = { 'J': 'j', 'Q': 'q', 'K': 'k', 'A': 'a', '10': '10', '9': '9', '8': '8', '7': '7', '6': '6', '5': '5', '4': '4', '3': '3', '2': '2' };
     
@@ -224,8 +224,8 @@ function renderDurakGame(state) {
     // Козырная карта
     const trumpEl = document.getElementById("durak-trump-card");
     if (trumpEl && state.trump_card) {
-        const imgKey = getCardImageKey(state.trump_card);
-        const imgUrl = cardImages[imgKey] || cardImages['card_back'];
+        const imgKey = getDurakCardImageKey(state.trump_card);
+        const imgUrl = durakCardImages[imgKey] || durakCardImages['card_back'];
         trumpEl.innerHTML = `<img src="${imgUrl}" alt="Trump" style="width: 45px; height: 65px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">`;
     }
 
@@ -260,7 +260,7 @@ function renderDurakGame(state) {
         
         if (enemyCardsContainer) {
             enemyCardsContainer.innerHTML = Array(opp.cards_count).fill(`
-                <img src="${cardImages['card_back']}" style="width: 38px; height: 55px; object-fit: cover; border-radius: 4px; margin-left: -18px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
+                <img src="${durakCardImages['card_back']}" style="width: 38px; height: 55px; object-fit: cover; border-radius: 4px; margin-left: -18px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">
             `).join('');
             enemyCardsContainer.style.cssText = "display: flex; justify-content: center; padding-left: 18px;";
         }
@@ -281,13 +281,13 @@ function renderDurakGame(state) {
                 const pairDiv = document.createElement("div");
                 pairDiv.style.cssText = "display: flex; gap: 6px; align-items: center; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 12px;";
 
-                const attKey = getCardImageKey(pair.attack);
-                const attUrl = cardImages[attKey] || cardImages['card_back'];
+                const attKey = getDurakCardImageKey(pair.attack);
+                const attUrl = durakCardImages[attKey] || durakCardImages['card_back'];
                 pairDiv.innerHTML += `<img src="${attUrl}" style="width: 62px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">`;
 
                 if (pair.defense) {
-                    const defKey = getCardImageKey(pair.defense);
-                    const defUrl = cardImages[defKey] || cardImages['card_back'];
+                    const defKey = getDurakCardImageKey(pair.defense);
+                    const defUrl = durakCardImages[defKey] || durakCardImages['card_back'];
                     pairDiv.innerHTML += `<img src="${defUrl}" style="width: 62px; height: 90px; object-fit: cover; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">`;
                 } else {
                     pairDiv.innerHTML += `
@@ -315,11 +315,10 @@ function renderDurakGame(state) {
         
         const totalCards = state.my_cards.length;
         state.my_cards.forEach((card, index) => {
-            const imgKey = getCardImageKey(card);
-            const imgUrl = cardImages[imgKey] || cardImages['card_back'];
+            const imgKey = getDurakCardImageKey(card);
+            const imgUrl = durakCardImages[imgKey] || durakCardImages['card_back'];
             const isSelected = selectedDurakCard === index;
 
-            // Расчет веера (дуги)
             const angle = totalCards > 1 ? (index - (totalCards - 1) / 2) * 7 : 0;
             const translateY = Math.abs(index - (totalCards - 1) / 2) * 4;
 
@@ -342,17 +341,13 @@ function renderDurakGame(state) {
                 border: ${isSelected ? '2px solid #ff2a75' : '1px solid rgba(255,255,255,0.4)'};
             `;
 
-            // Клик для выбора карты
             cardEl.onclick = () => selectCard(index);
-
-            // Добавляем поддержку перетаскивания (Drag-and-Drop) на стол
-            setupCardDrag(cardEl, index);
+            setupDurakCardDrag(cardEl, index);
 
             myCardsContainer.appendChild(cardEl);
         });
     }
 
-    // Кнопки управления
     const actionBtn = document.getElementById("btn-durak-action");
     const takeBtn = document.getElementById("btn-durak-take");
 
@@ -363,21 +358,17 @@ function renderDurakGame(state) {
     }
 }
 
-// Выбор карты в руке
 function selectCard(index) {
     selectedDurakCard = selectedDurakCard === index ? null : index;
-    // Перерисовываем руку локально, чтобы обновить веер и поднятую карту
     if (lastRenderedState) {
         const parsed = JSON.parse(lastRenderedState);
-        lastRenderedState = ""; // Сбрасываем кэш рендера для принудительного обновления веера
+        lastRenderedState = "";
         renderDurakGame({ ...parsed, my_cards: parsed.my, table_cards: parsed.table });
     }
 }
 
-// Настройка перетаскивания карты (Drag and Drop для мыши и тач-устройств)
-function setupCardDrag(cardEl, index) {
+function setupDurakCardDrag(cardEl, index) {
     let startX = 0, startY = 0;
-    let initialX = 0, initialY = 0;
     let isDragging = false;
 
     const onStart = (e) => {
@@ -408,20 +399,17 @@ function setupCardDrag(cardEl, index) {
         
         if (tableArea) {
             const rect = tableArea.getBoundingClientRect();
-            // Проверяем, бросил ли игрок карту в зону стола
             if (
                 touch.clientX >= rect.left && 
                 touch.clientX <= rect.right && 
                 touch.clientY >= rect.top && 
                 touch.clientY <= rect.bottom
             ) {
-                // Выполняем ход этой картой
                 durakPlayCard(index);
                 return;
             }
         }
 
-        // Если бросили мимо стола — возвращаем на место
         lastRenderedState = "";
         updateDurakState();
     };
@@ -435,7 +423,6 @@ function setupCardDrag(cardEl, index) {
     window.addEventListener("mouseup", onEnd);
 }
 
-// Отправка карты на сервер при клике или перетаскивании
 async function durakPlayCard(cardIndex) {
     try {
         const response = await fetch(`${API_URL}/api/durak/action?table_id=${durakTableId}&game_id=${currentUserData.game_id}&card_index=${cardIndex}`, {
@@ -454,7 +441,6 @@ async function durakPlayCard(cardIndex) {
     }
 }
 
-// Кнопка главного действия (Атака / Бито / Защита)
 async function durakMainAction() {
     if (selectedDurakCard === null) {
         sendDurakAction("bito");
@@ -463,7 +449,6 @@ async function durakMainAction() {
     durakPlayCard(selectedDurakCard);
 }
 
-// Кнопка «Взять»
 async function durakTakeCards() {
     sendDurakAction("take");
 }
